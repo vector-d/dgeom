@@ -39,6 +39,7 @@ public import geom.coord;
 import math = std.math;
 import geom.affine;
 import geom.intpoint;
+import geom.transforms;
 
 struct Point
 {
@@ -133,7 +134,7 @@ struct Point
         else static assert(0, "Point operator "~op~" not implemented");
     }
     
-    Point opBinary(string op, T : Affine)(Affine rhs) const if (op == "*")
+    Point opBinary(string op, T : Affine)(T m) const if (op == "*")
     {
         /* Transform the point by the specified matrix. */
         Point lhs = this;
@@ -371,17 +372,17 @@ Point abs(in Point b)
  * @post distance(A, B) == distance(A, result)
  * @post angle_between(result - A, dir) == \f$2k\pi/n, k \in \mathbb{N}\f$
  * @relates Point */
-/*Point constrain_angle(in Point A, in Point B, uint n, in Point dir)
-{ XXX Rotate
+Point constrain_angle(in Point A, in Point B, uint n, in Point dir)
+{
     // for special cases we could perhaps use explicit testing (which might be faster)
-    if (n == 0.0) {
+    if (n == 0) {
         return B;
     }
     Point diff = B - A;
     double angle = -angle_between(diff, dir);
-    double k = math.round(angle * (double)n / (2.0*M_PI));
-    return A + dir * Rotate(k * 2.0 * M_PI / (double)n) * L2(diff);
-}*/
+    double k = math.round(angle * cast(double)n / (2.0*math.PI));
+    return A + dir * Rotate(k * 2.0 * math.PI / cast(double)n) * L2(diff);
+}
 
 /*
   Local Variables:
