@@ -51,7 +51,7 @@ struct Point
     { _pt = [x, y]; }
     
     this(const(Coord[2]) arr)
-    { _pt = arr; } // XXX
+    { _pt = arr; }
 
     /** Construct from integer point. */
     this(IntPoint p)
@@ -312,8 +312,8 @@ Coord L1(in Point p)
  * @relates Point */
 Coord LInfty(in Point p)
 {
-    Coord a = math.fabs(p[0]);
-    Coord b = math.fabs(p[1]);
+    Coord a = math.fabs(p[X]);
+    Coord b = math.fabs(p[Y]);
     return (a < b || math.isNaN(b) ? b : a);
 }
 

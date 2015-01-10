@@ -70,7 +70,7 @@ struct Affine
     { _c = [c0, c1, c2, c3, c4, c5]; }
     
     this(const(Coord[6]) arr)
-    { _c = arr; } // XXX
+    { _c = arr; }
 
     /** Create an identity matrix.
      * @return The matrix
