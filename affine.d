@@ -506,6 +506,10 @@ struct Affine
         } else {
             d.setIdentity();
         }
+        
+        foreach(ref m; d._c) {
+            if (m == -0) m = 0;
+        }
 
         return d;
     }
@@ -538,7 +542,7 @@ struct Affine
 unittest
 {
     /* Equality */
-    Affine e = identity(); // identity
+    const Affine e = identity(); // identity
     Affine a = [1, 2, 3, 4, 5, 6];
     assert(e == e);
     assert(e == e.identity());
@@ -568,7 +572,7 @@ unittest
     assert(!a.flips());
     assert(!a.isSingular());
     
-    a.setTranslation(Point(10, 15)); // pure translation
+    a = Translate(10, 15); // pure translation
     assert(!a.isIdentity());
     assert(a.isTranslation());
     assert(!a.isScale());
@@ -578,17 +582,58 @@ unittest
     assert(!a.isVShear());
     assert(a.isZoom());
     assert(a.isNonzeroTranslation());
-    assert(!a.isNonzeroScale());
-    assert(!a.isNonzeroUniformScale());
-    assert(!a.isNonzeroRotation());
-    assert(!a.isNonzeroNonpureRotation());
-    assert(!a.isNonzeroHShear());
-    assert(!a.isNonzeroVShear());
-    assert(a.preservesArea());
-    assert(a.preservesAngles());
-    assert(a.preservesDistances());
     assert(!a.flips());
     assert(!a.isSingular());
+
+    a = Scale(-1.0, 1.0); // flip on the X axis
+    assert(!a.isIdentity());
+    assert(!a.isTranslation());
+    assert(a.isScale());
+    assert(a.isUniformScale());
+    assert(!a.isRotation());
+    assert(!a.isHShear());
+    assert(!a.isVShear());
+    assert(!a.isZoom()); // zoom must be non-flipping
+    assert(a.flips());
+    assert(!a.isSingular());
+
+    // no idea why this one needs a constructor call
+    a = Affine([0., 0, 0, 0, 0, 0]); // zero matrix (singular)
+    assert(!a.isIdentity());
+    assert(!a.isTranslation());
+    assert(!a.isScale());
+    assert(!a.isUniformScale());
+    assert(!a.isRotation());
+    assert(!a.isHShear());
+    assert(!a.isVShear());
+    assert(!a.isZoom());
+    assert(!a.preservesArea());
+    assert(!a.preservesAngles());
+    assert(!a.preservesDistances());
+    assert(!a.flips());
+    assert(a.isSingular());
+
+    /* Inversion */
+    Affine i = [1, 2, 1, -2, 10, 15]; // invertible
+    Affine n = [1, 2, 1,  2, 15, 30]; // non-invertible
+    assert(i * i.inverse() == e);
+    assert(i.inverse().inverse() == i);
+    assert(n.inverse() == e);
+    assert(e.inverse() == e);
+
+    /* Nearness */
+    Affine a1 = [1, 0, 1, 2, 1e-8, 1e-8];
+    Affine a2 = [1+1e-8, 0, 1, 2-1e-8, -1e-8, -1e-8];
+    assert(are_near(a1, a2, 1e-7));
+    assert(!are_near(a1, a2, 1e-9));
+
+    // test whether noncommutative multiplications work correctly
+    a1 = Scale(0.1);
+    a2 = Translate(10, 10);
+    Affine a3 = Scale(10.0);
+    Affine t1 = Translate(1, 1), t100 = Translate(100, 100);
+    assert(a1 * a2 * a3 == t100);
+    assert(a3 * a2 * a1 == t1);
 }
 
 void main() { }
