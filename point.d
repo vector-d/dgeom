@@ -37,6 +37,7 @@ module geom.point;
 public import geom.coord;
 
 import math = std.math;
+import geom.affine;
 import geom.intpoint;
 
 struct Point
@@ -48,7 +49,7 @@ struct Point
     this(Coord x, Coord y)
     { _pt = [x, y]; }
     
-    this(const(Coord[]) arr)
+    this(const(Coord[2]) arr)
     { _pt = arr; } // XXX
 
     /** Construct from integer point. */
@@ -132,6 +133,16 @@ struct Point
         else static assert(0, "Point operator "~op~" not implemented");
     }
     
+    Point opBinary(string op, T : Affine)(Affine rhs) const if (op == "*")
+    {
+        /* Transform the point by the specified matrix. */
+        Point lhs = this;
+        Coord x = _pt[X], y = _pt[Y];
+        lhs[X] = x * m[0] + y * m[2] + m[4];
+        lhs[Y] = x * m[1] + y * m[3] + m[5];
+        return lhs;
+    }
+    
     void opOpAssign(string op, T)(T rhs)
     { mixin("this = this "~op~" rhs;"); }
     
@@ -144,7 +155,7 @@ struct Point
     /** Check whether the length of the vector is close to 1. */
     bool isNormalized(Coord eps = EPSILON) const { return geom.coord.are_near(length(), 1.0, eps); }
 
-    /** @brief Check whether both coordinates are zero. */
+    /** Check whether both coordinates are zero. */
     bool isZero() const { return _pt[X] == 0 && _pt[Y] == 0; }
 
     /** Lexicographical ordering for points.

@@ -46,7 +46,7 @@ struct IntPoint
     this(IntCoord x, IntCoord y)
     { _pt = [x, y]; }
     
-    this(const(IntCoord[]) arr)
+    this(const(IntCoord[2]) arr)
     { _pt = arr; }
 
 
@@ -99,8 +99,6 @@ unittest
     IntPoint t = [0, 0];
     assert(t == p);
 }
-
-void main() { }
 
 /*
   Local Variables:

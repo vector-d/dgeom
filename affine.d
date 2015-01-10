@@ -15,6 +15,7 @@ module geom.affine;
 public import geom.coord;
 import math = std.math;
 import geom.point;
+import geom.transforms;
 
 /**
  * 3x3 matrix representing an affine transformation.
@@ -68,7 +69,7 @@ struct Affine
     this(Coord c0, Coord c1, Coord c2, Coord c3, Coord c4, Coord c5)
     { _c = [c0, c1, c2, c3, c4, c5]; }
     
-    this(const(Coord[]) arr)
+    this(const(Coord[6]) arr)
     { _c = arr; } // XXX
 
     /** Create an identity matrix.
@@ -85,6 +86,26 @@ struct Affine
     ref inout(Coord) opIndex(size_t i) inout
     { return _c[i]; }
 
+    /+ Transform an Affine +/
+
+    /** Combine this transformation with another one.
+     * After this operation, the matrix will correspond to the transformation
+     * obtained by first applying the original version of this matrix, and then
+     * applying @a m. */
+    Affine opBinary(string op)(in Affine rhs) const if (op == "*")
+    {
+        Affine ret = this;
+        Coord nc[6];
+        for(int a = 0; a < 5; a += 2) {
+            for(int b = 0; b < 2; b++) {
+                nc[a + b] = _c[a] * rhs._c[b] + _c[a + 1] * rhs._c[b + 2];
+            }
+        }
+        ret._c = nc;
+        ret[4] += rhs._c[4];
+        ret[5] += rhs._c[5];
+        return ret;
+    }
 
     /+ Get the parameters of the matrix's transform +/
 
@@ -310,6 +331,31 @@ struct Affine
                geom.coord.are_near(_c[0]*_c[0] + _c[1]*_c[1], 1.0, eps);
     }
 
+    /** Check whether this matrix represents a non-zero rotation about any point.
+     * @param eps Numerical tolerance
+     * @return True iff the matrix is of the form
+     *         \f$\left[\begin{array}{ccc}
+               a & b & 0 \\
+               -b & a & 0 \\
+               c & d & 1 \end{array}\right]\f$, \f$a^2 + b^2 = 1\f$ and \f$a \neq 1\f$. */
+    bool isNonzeroNonpureRotation(Coord eps = EPSILON) const
+    {
+        return !geom.coord.are_near(_c[0], 1.0, eps) &&
+               geom.coord.are_near(_c[0], _c[3], eps) && geom.coord.are_near(_c[1], -_c[2], eps) &&
+               geom.coord.are_near(_c[0]*_c[0] + _c[1]*_c[1], 1.0, eps);
+    }
+
+    /** For a (possibly non-pure) non-zero-rotation matrix, calculate the rotation center.
+     * @pre The matrix must be a non-zero-rotation matrix to prevent division by zero, see isNonzeroNonpureRotation().
+     * @return The rotation center x, the solution to the equation
+     *         \f$A x = x\f$. */
+    Point rotationCenter() const
+    {
+        Coord x = (_c[2]*_c[5]+_c[4]-_c[4]*_c[3]) / (1-_c[3]-_c[0]+_c[0]*_c[3]-_c[2]*_c[1]);
+        Coord y = (_c[1]*x + _c[5]) / (1 - _c[3]);
+        return Point(x,y);
+    }
+
     /** Check whether this matrix represents pure, nonzero horizontal shearing.
      * @param eps Numerical tolerance
      * @return True iff the matrix is of the form
@@ -488,6 +534,64 @@ struct Affine
 
     private Coord[6] _c;
 }
+
+unittest
+{
+    /* Equality */
+    Affine e = identity(); // identity
+    Affine a = [1, 2, 3, 4, 5, 6];
+    assert(e == e);
+    assert(e == e.identity());
+    assert(e != a);
+    a = e;
+    assert(e == a);
+    
+    /* Classification */
+    assert(a.isIdentity());
+    assert(a.isTranslation());
+    assert(a.isScale());
+    assert(a.isUniformScale());
+    assert(a.isRotation());
+    assert(a.isHShear());
+    assert(a.isVShear());
+    assert(a.isZoom());
+    assert(!a.isNonzeroTranslation());
+    assert(!a.isNonzeroScale());
+    assert(!a.isNonzeroUniformScale());
+    assert(!a.isNonzeroRotation());
+    assert(!a.isNonzeroNonpureRotation());
+    assert(!a.isNonzeroHShear());
+    assert(!a.isNonzeroVShear());
+    assert(a.preservesArea());
+    assert(a.preservesAngles());
+    assert(a.preservesDistances());
+    assert(!a.flips());
+    assert(!a.isSingular());
+    
+    a.setTranslation(Point(10, 15)); // pure translation
+    assert(!a.isIdentity());
+    assert(a.isTranslation());
+    assert(!a.isScale());
+    assert(!a.isUniformScale());
+    assert(!a.isRotation());
+    assert(!a.isHShear());
+    assert(!a.isVShear());
+    assert(a.isZoom());
+    assert(a.isNonzeroTranslation());
+    assert(!a.isNonzeroScale());
+    assert(!a.isNonzeroUniformScale());
+    assert(!a.isNonzeroRotation());
+    assert(!a.isNonzeroNonpureRotation());
+    assert(!a.isNonzeroHShear());
+    assert(!a.isNonzeroVShear());
+    assert(a.preservesArea());
+    assert(a.preservesAngles());
+    assert(a.preservesDistances());
+    assert(!a.flips());
+    assert(!a.isSingular());
+}
+
+void main() { }
 
 /** Nearness predicate for affine transforms
  * Returns true if all entries of matrices are within eps of each other */
