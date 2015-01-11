@@ -106,19 +106,19 @@ struct Point
     /** Round to nearest integer coordinates. */
     IntPoint round() const
     {
-        IntPoint ret = [cast(int)math.round(_pt[X]), cast(int)math.round(_pt[Y])];
+        IntPoint ret = [cast(IntCoord)math.round(_pt[X]), cast(IntCoord)math.round(_pt[Y])];
         return ret;
     }
     /** Round coordinates downwards. */
     IntPoint floor() const
     {
-        IntPoint ret = [cast(int)math.floor(_pt[X]), cast(int)math.floor(_pt[Y])];
+        IntPoint ret = [cast(IntCoord)math.floor(_pt[X]), cast(IntCoord)math.floor(_pt[Y])];
         return ret;
     }
     /** Round coordinates upwards. */
     IntPoint ceil() const
     {
-        IntPoint ret = [cast(int)math.ceil(_pt[X]), cast(int)math.ceil(_pt[Y])];
+        IntPoint ret = [cast(IntCoord)math.ceil(_pt[X]), cast(IntCoord)math.ceil(_pt[Y])];
         return ret;
     }
 
@@ -380,8 +380,8 @@ Point constrain_angle(in Point A, in Point B, uint n, in Point dir)
     }
     Point diff = B - A;
     double angle = -angle_between(diff, dir);
-    double k = math.round(angle * cast(double)n / (2.0*math.PI));
-    return A + dir * Rotate(k * 2.0 * math.PI / cast(double)n) * L2(diff);
+    double k = math.round(angle * cast(Coord)n / (2.0*math.PI));
+    return A + dir * Rotate(k * 2.0 * math.PI / cast(Coord)n) * L2(diff);
 }
 
 /*
