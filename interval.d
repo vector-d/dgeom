@@ -42,6 +42,8 @@ class GenericInterval(C)
 
     /** Create an interval that contains only zero. */
     this() { _b = [0, 0]; }
+    /** Create an interval from another interval. */
+    this(in GenericInterval!C o) { _b = o._b; }
     /** Create an interval that contains a single point. */
     this(C u) { _b = [u, u]; }
     /** Create an interval that contains all points between @c u and @c v. */
@@ -73,6 +75,15 @@ class GenericInterval(C)
     /** Check whether the intervals have any common elements. */
     bool intersects(in GenericInterval!C val) const
     { return contains(val.min()) || contains(val.max()) || val.contains(this); }
+
+    /** Check whether the interior of the interval includes this number.
+     * Interior means all numbers in the interval except its ends. */
+    bool interiorContains(C val) const { return min() < val && val < max(); }
+    /** @brief Check whether the interior of the interval includes the given interval.
+     * Interior means all numbers in the interval except its ends. */
+    bool interiorContains(in GenericInterval!C val) const { return min() < val.min() && val.max() < max(); }
+    /** @brief Check whether the interiors of the intervals have any common elements.  A single point in common is not considered an intersection. */
+    bool interiorIntersects(in GenericInterval!C val) const { return math.fmax(min(), val.min()) < math.fmin(max(), val.max()); }
     
     
     /+ Modify the interval +/
@@ -132,7 +143,8 @@ class GenericInterval(C)
         if(a._b[1] > _b[1]) _b[1] = a._b[1];
     }
 
-    static GenericInterval!C intersect(in GenericInterval!C t, in GenericInterval!C o) {
+    static GenericInterval!C intersect(in GenericInterval!C t, in GenericInterval!C o)
+    {
         if (o !is null && t !is null) {
             C u = cast(C)math.fmax(t.min(), o.min());
             C v = cast(C)math.fmin(t.max(), o.max());
@@ -164,41 +176,32 @@ class GenericInterval(C)
     protected C[2] _b;
 }
 
-alias IntInterval = GenericInterval!int;
+alias IntInterval = GenericInterval!IntCoord;
+alias Interval = GenericInterval!Coord;
 
-class Interval : GenericInterval!Coord
-{
-    /** Convert from integer interval */
-   this(in IntInterval i) { super(i.min(), i.max()); }
 
-    /+ Test coordinates and other intervals for inclusion. +/
-
-    /** Check whether the interior of the interval includes this number.
-     * Interior means all numbers in the interval except its ends. */
-    bool interiorContains(Coord val) const { return min() < val && val < max(); }
-    /** @brief Check whether the interior of the interval includes the given interval.
-     * Interior means all numbers in the interval except its ends. */
-    bool interiorContains(in Interval val) const { return min() < val.min() && val.max() < max(); }
-    /** @brief Check whether the interiors of the intervals have any common elements.  A single point in common is not considered an intersection. */
-    bool interiorIntersects(in Interval val) const { return math.fmax(min(), val.min()) < math.fmin(max(), val.max()); }
-
-    /+ Rounding to integer values +/
-
-    /** Return the smallest integer interval which contains this one. */
-    IntInterval roundOutwards() const
-    { return new IntInterval(cast(int)math.floor(min()), cast(int)math.ceil(max())); }
-
-    /** Return the largest integer interval which is contained in this one. */
-    IntInterval roundInwards() const
-    {
-        IntCoord u = cast(int)math.ceil(min()), v = cast(int)math.floor(max());
-        if (u > v) { return null; }
-        return new IntInterval(u, v);
-    }
-}
 unittest
 {
-    Interval i;
+    Interval i = new Interval;
+    assert(i.min() == 0);
+    assert(i.max() == 0);
+    assert(i.extent() == 0);
+    assert(i.middle() == 0);
+    assert(i.isSingular());
+    
+    i = new Interval(1, 4);
+    Interval j = new Interval(2, 3);
+    
+    assert(i.intersects(j));
+    assert(j.intersects(i));
+    
+    Interval k = i & j;
+    assert(k.min() == 2);
+    assert(k.max() == 3);
+    
+    Interval l = i | j;
+    assert(l.min() == 1);
+    assert(l.max() == 4);
 }
 
 /*
