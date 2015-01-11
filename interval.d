@@ -202,6 +202,11 @@ unittest
     Interval l = i | j;
     assert(l.min() == 1);
     assert(l.max() == 4);
+
+    k = new Interval(1, 2);
+    l = new Interval(3, 4);
+    j = k & l;
+    assert(j is null);
 }
 
 /*
