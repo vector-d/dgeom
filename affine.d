@@ -507,6 +507,7 @@ struct Affine
             d.setIdentity();
         }
         
+        // negative zero
         foreach(ref m; d._c) {
             if (m == -0) m = 0;
         }
@@ -635,8 +636,6 @@ unittest
     assert(a1 * a2 * a3 == t100);
     assert(a3 * a2 * a1 == t1);
 }
-
-void main() { }
 
 /** Nearness predicate for affine transforms
  * Returns true if all entries of matrices are within eps of each other */
