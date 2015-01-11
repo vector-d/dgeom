@@ -179,6 +179,17 @@ class GenericInterval(C)
 alias IntInterval = GenericInterval!IntCoord;
 alias Interval = GenericInterval!Coord;
 
+/** Return the smallest integer interval which contains this one. */
+IntInterval roundOutwards(in Interval i)
+{ return new IntInterval(cast(IntCoord)math.floor(i.min()), cast(IntCoord)math.ceil(i.max())); }
+
+/** Return the largest integer interval which is contained in this one. */
+IntInterval roundInwards(in Interval i)
+{
+    IntCoord u = cast(IntCoord)math.ceil(i.min()), v = cast(IntCoord)math.floor(i.max());
+    if (u > v) { return null; }
+    return new IntInterval(u, v);
+}
 
 unittest
 {
