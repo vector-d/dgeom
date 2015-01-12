@@ -220,6 +220,11 @@ unittest
     l = Interval(3, 4);
     j = k & l;
     assert(j.isEmpty());
+
+    IntInterval m = IntInterval(-1, 1);
+    IntInterval n = IntInterval(0, 0);
+    IntInterval o = m & n;
+    assert(o.isEmpty());
 }
 
 /*
