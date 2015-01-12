@@ -111,12 +111,20 @@ struct Affine
      * Note that one should never expect two Affines to be exactly equal due
      * to the relative imprecision of IEEE 754 floats; instead, use the
      * geom.affine.are_near equality predicate for comparing affines. */
-    bool opEquals(const Affine rhs) const
+    bool opEquals(in Affine rhs) const
     {
         foreach(i, m; _c)
             if (m != rhs._c[i]) return false;
         return true;
     }
+
+    /** Slice assignment operator for Affine. */
+    void opAssign(const(Coord[6]) arr)
+    { _c = arr; }
+
+    /* Grrrr.... */
+    void opAssign(in Affine rhs)
+    { _c = rhs._c; }
 
     /+ Get the parameters of the matrix's transform +/
 
@@ -603,8 +611,7 @@ unittest
     assert(a.flips());
     assert(!a.isSingular());
 
-    // no idea why this one needs a constructor call
-    a = Affine([0., 0, 0, 0, 0, 0]); // zero matrix (singular)
+    a = [0, 0, 0, 0, 0, 0]; // zero matrix (singular)
     assert(!a.isIdentity());
     assert(!a.isTranslation());
     assert(!a.isScale());
