@@ -556,13 +556,13 @@ struct Affine
 unittest
 {
     /* Equality */
-    const Affine e = identity(); // identity
+    const Affine I = Affine.identity(); // identity
     Affine a = [1, 2, 3, 4, 5, 6];
-    assert(e == e);
-    assert(e == e.identity());
-    assert(e != a);
-    a = e;
-    assert(e == a);
+    assert(I == I);
+    assert(I == I.identity());
+    assert(I != a);
+    a = I;
+    assert(I == a);
     
     /* Classification */
     assert(a.isIdentity());
@@ -629,10 +629,10 @@ unittest
     /* Inversion */
     Affine i = [1, 2, 1, -2, 10, 15]; // invertible
     Affine n = [1, 2, 1,  2, 15, 30]; // non-invertible
-    assert(i * i.inverse() == e);
+    assert(i * i.inverse() == I);
     assert(i.inverse().inverse() == i);
-    assert(n.inverse() == e);
-    assert(e.inverse() == e);
+    assert(n.inverse() == I);
+    assert(I.inverse() == I);
 
     /* Nearness */
     Affine a1 = [1, 0, 1, 2, 1e-8, 1e-8];
