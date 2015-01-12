@@ -139,14 +139,14 @@ struct Affine
     /+ Modify the matrix +/
 
     void setXAxis(in Point vec)
-    { _c[0..2] = [vec[0], vec[1]]; }
+    { _c[0..2] = [vec[X], vec[Y]]; }
 
     void setYAxis(in Point vec)
-    { _c[2..4] = [vec[0], vec[1]]; }
+    { _c[2..4] = [vec[X], vec[Y]]; }
 
     /** Sets the translation imparted by the Affine */
     void setTranslation(in Point loc)
-    { _c[4..6] = [loc[0], loc[1]]; }
+    { _c[4..6] = [loc[X], loc[Y]]; }
 
     void setExpansionX(Coord val)
     {
