@@ -58,12 +58,9 @@ struct Translate
     /* Get the inverse translation. */
     Translate inverse() const { return Translate(-vec); }
 
-    
     Translate opBinary(string op)(Translate rhs) const if (op == "*")
     { return Translate(this.vec + rhs.vec); }
-
-    void opOpAssign(string op)(Translate rhs)
-    { mixin("this = this "~op~" rhs;"); }
+    mixin self_assign;
 
     @property Affine toAffine() const
     { return Affine(1, 0, 0, 1, vec[X], vec[Y]); }
@@ -102,9 +99,7 @@ struct Scale
 
     Scale opBinary(string op)(Scale rhs) const if (op == "*")
     { return Scale(vec[X] * rhs[X], vec[Y] * rhs[Y]); }
-
-    void opOpAssign(string op)(Scale rhs)
-    { mixin("this = this "~op~" rhs;"); }
+    mixin self_assign;
 
     @property Affine toAffine() const
     { return Affine(vec[X], 0, 0, vec[Y], 0, 0); }
@@ -150,9 +145,7 @@ struct Rotate
 
     Rotate opBinary(string op)(Rotate rhs) const if (op == "*")
     { return Rotate(vec * cast(Affine)rhs); }
-
-    void opOpAssign(string op)(Rotate rhs)
-    { mixin("this = this "~op~" rhs;"); }
+    mixin self_assign;
 
     @property Affine toAffine() const
     { return Affine(vec[X], vec[Y], -vec[Y], vec[X], 0, 0); }
@@ -181,9 +174,7 @@ struct HShear
 
     HShear opBinary(string op)(HShear rhs) const if (op == "*")
     { return HShear(f + rhs.f); }
-
-    void opOpAssign(string op)(HShear rhs)
-    { mixin("this = this "~op~" rhs;"); }
+    mixin self_assign;
 
     @property Affine toAffine() const
     { return Affine(1, 0, f, 1, 0, 0); }
@@ -212,9 +203,7 @@ struct VShear
 
     HShear opBinary(string op)(VShear rhs) const if (op == "*")
     { return VShear(f + rhs.f); }
-
-    void opOpAssign(string op)(VShear rhs)
-    { mixin("this = this "~op~" rhs;"); }
+    mixin self_assign;
 
     @property Affine toAffine() const
     { return Affine(1, f, 0, 1, 0, 0); }
@@ -266,9 +255,7 @@ struct Zoom
 
     Zoom opBinary(string op)(Zoom rhs) const if (op == "*")
     { return Zoom(_scale * rhs._scale, Translate(_trans + rhs._trans / _scale)); }
-
-    void opOpAssign(string op)(Zoom rhs)
-    { mixin("this = this "~op~" rhs;"); }
+    mixin self_assign;
 
     @property Affine toAffine() const
     { return Affine(_scale, 0, 0, _scale, _trans[X] * _scale, _trans[Y] * _scale); }
@@ -289,6 +276,12 @@ Affine reflection(in Point vector, in Point origin)
                     2 * vec_norm[X] * vec_norm[Y], vec_norm[Y]*vec_norm[Y] - vec_norm[X]*vec_norm[X] ,
                     0 ,0];
     return Translate(-origin) * mirror * Translate(origin);
+}
+
+private mixin template self_assign()
+{
+    void opOpAssign(string op)(Scale rhs)
+    { mixin("this = this "~op~" rhs;"); }
 }
 
 /*
