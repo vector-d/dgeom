@@ -280,7 +280,7 @@ Affine reflection(in Point vector, in Point origin)
 
 private mixin template self_assign()
 {
-    void opOpAssign(string op)(Scale rhs)
+    void opOpAssign(string op, T)(T rhs)
     { mixin("this = this "~op~" rhs;"); }
 }
 
