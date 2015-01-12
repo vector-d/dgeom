@@ -107,6 +107,17 @@ struct Affine
         return ret;
     }
 
+    /** Equality predicate for Affine.
+     * Note that one should never expect two Affines to be exactly equal due
+     * to the relative imprecision of IEEE 754 floats; instead, use the
+     * geom.affine.are_near equality predicate for comparing affines. */
+    bool opEquals(const Affine rhs) const
+    {
+        foreach(i, m; _c)
+            if (m != rhs._c[i]) return false;
+        return true;
+    }
+
     /+ Get the parameters of the matrix's transform +/
 
     Point xAxis() const
@@ -506,12 +517,6 @@ struct Affine
         } else {
             d.setIdentity();
         }
-        
-        // negative zero
-        foreach(ref m; d._c) {
-            if (m == -0) m = 0;
-        }
-
         return d;
     }
 
