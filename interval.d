@@ -36,12 +36,12 @@ import math = std.math;
  * A range of numbers which is never empty.
  * @ingroup Primitives
  */
-class GenericInterval(C)
+struct GenericInterval(C)
 {
     /+ Create intervals. +/
 
-    /** Create an interval that contains only zero. */
-    this() { _b = [0, 0]; }
+    @disable this();
+
     /** Create an interval from another interval. */
     this(in GenericInterval!C o) { _b = o._b; }
     /** Create an interval that contains a single point. */
@@ -55,7 +55,10 @@ class GenericInterval(C)
             _b[0] = v; _b[1] = u;
         }
     }
-    
+
+    /** Create an empty interval. */
+    static GenericInterval!C empty() { return GenericInterval!C(cast(C)0, cast(C)0); }
+
     /+ Inspect endpoints +/
 
     C min() const { return _b[0]; }
@@ -63,6 +66,7 @@ class GenericInterval(C)
     C extent() const { return max() - min(); }
     C middle() const { return (max() + min()) / 2; }
     bool isSingular() const { return min() == max(); }
+    bool isEmpty() const { return this == empty(); }
 
     /+ Test coordinates and other intervals for inclusion. +/
 
@@ -145,29 +149,27 @@ class GenericInterval(C)
 
     static GenericInterval!C intersect(in GenericInterval!C t, in GenericInterval!C o)
     {
-        if (o !is null && t !is null) {
-            C u = cast(C)math.fmax(t.min(), o.min());
-            C v = cast(C)math.fmin(t.max(), o.max());
-            if (u <= v) {
-                return new GenericInterval!C(u, v);
-            }
+        C u = cast(C)math.fmax(t.min(), o.min());
+        C v = cast(C)math.fmin(t.max(), o.max());
+        if (u <= v) {
+            return GenericInterval!C(u, v);
         }
-        return null;
+        return empty();
     }
 
     GenericInterval!C opBinary(string op, T)(T rhs) const
     {
-        static if (op == "+") { return new GenericInterval!C(_b[0] + rhs, _b[1] + rhs); }
-        else static if (op == "-") { return new GenericInterval!C(_b[0] - rhs, _b[1] - rhs); }
-        else static if (op == "*") { return new GenericInterval!C(_b[0] * rhs, _b[1] * rhs); }
-        else static if (op == "/") { return new GenericInterval!C(_b[0] / rhs, _b[1] / rhs); } // TODO division by zero?
+        static if (op == "+") { return GenericInterval!C(_b[0] + rhs, _b[1] + rhs); }
+        else static if (op == "-") { return GenericInterval!C(_b[0] - rhs, _b[1] - rhs); }
+        else static if (op == "*") { return GenericInterval!C(_b[0] * rhs, _b[1] * rhs); }
+        else static if (op == "/") { return GenericInterval!C(_b[0] / rhs, _b[1] / rhs); } // TODO division by zero?
         else static if (op == "|") { 
-            auto r = new GenericInterval!C(this);
+            auto r = GenericInterval!C(this);
             r.unionWith(rhs);
             return r;
         }
         else static if (op == "&") { return intersect(this, rhs); }
-        else static assert(0, "GenericInterval!"~C.stringof~" operator "~op~" not implemented");
+        else static assert(false, "GenericInterval!"~C.stringof~" operator "~op~" not implemented");
     }
 
     void opOpAssign(string op, T)(T rhs)
@@ -181,27 +183,27 @@ alias Interval = GenericInterval!Coord;
 
 /** Return the smallest integer interval which contains this one. */
 IntInterval roundOutwards(in Interval i)
-{ return new IntInterval(cast(IntCoord)math.floor(i.min()), cast(IntCoord)math.ceil(i.max())); }
+{ return IntInterval(cast(IntCoord)math.floor(i.min()), cast(IntCoord)math.ceil(i.max())); }
 
 /** Return the largest integer interval which is contained in this one. */
 IntInterval roundInwards(in Interval i)
 {
     IntCoord u = cast(IntCoord)math.ceil(i.min()), v = cast(IntCoord)math.floor(i.max());
-    if (u > v) { return null; }
-    return new IntInterval(u, v);
+    if (u > v) { return IntInterval.empty(); }
+    return IntInterval(u, v);
 }
 
 unittest
 {
-    Interval i = new Interval;
+    Interval i = Interval.empty();
     assert(i.min() == 0);
     assert(i.max() == 0);
     assert(i.extent() == 0);
     assert(i.middle() == 0);
     assert(i.isSingular());
     
-    i = new Interval(1, 4);
-    Interval j = new Interval(2, 3);
+    i = Interval(1, 4);
+    Interval j = Interval(2, 3);
     
     assert(i.intersects(j));
     assert(j.intersects(i));
@@ -214,10 +216,10 @@ unittest
     assert(l.min() == 1);
     assert(l.max() == 4);
 
-    k = new Interval(1, 2);
-    l = new Interval(3, 4);
+    k = Interval(1, 2);
+    l = Interval(3, 4);
     j = k & l;
-    assert(j is null);
+    assert(j.isEmpty());
 }
 
 /*
