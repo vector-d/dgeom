@@ -43,9 +43,9 @@ struct GenericInterval(C)
     @disable this();
 
     /** Create an interval from another interval. */
-    this(in GenericInterval!C o) { _b = o._b; }
+    this(in GenericInterval!C o) { _b = o._b; _empty = false; }
     /** Create an interval that contains a single point. */
-    this(C u) { _b = [u, u]; }
+    this(C u) { _b = [u, u]; _empty = false; }
     /** Create an interval that contains all points between @c u and @c v. */
     this(C u, C v)
     {
@@ -54,10 +54,13 @@ struct GenericInterval(C)
         } else {
             _b[0] = v; _b[1] = u;
         }
+        _empty = false;
     }
 
-    /** Create an empty interval. */
-    static GenericInterval!C empty() { return GenericInterval!C(cast(C)0, cast(C)0); }
+    /** Create an empty interval.
+     * This interval is special in that intersecting with it will always return
+     * the empty interval, and unioning will do nothing. */
+    static GenericInterval!C empty() { auto r = GenericInterval!C(cast(C)0, cast(C)0); r._empty = true; return r; }
 
     /+ Inspect endpoints +/
 
@@ -66,28 +69,28 @@ struct GenericInterval(C)
     C extent() const { return max() - min(); }
     C middle() const { return (max() + min()) / 2; }
     bool isSingular() const { return min() == max(); }
-    bool isEmpty() const { return this == empty(); }
+    bool isEmpty() const { return this._empty; }
 
     /+ Test coordinates and other intervals for inclusion. +/
 
     /** Check whether the interval includes this number. */
     bool contains(C val) const
-    { return min() <= val && val <= max(); }
+    { return !isEmpty() && min() <= val && val <= max(); }
     /** Check whether the interval includes the given interval. */
     bool contains(in GenericInterval!C val) const
-    { return min() <= val.min() && val.max() <= max(); }
+    { return (!isEmpty() && !val.isEmpty()) && min() <= val.min() && val.max() <= max(); }
     /** Check whether the intervals have any common elements. */
     bool intersects(in GenericInterval!C val) const
-    { return contains(val.min()) || contains(val.max()) || val.contains(this); }
+    { return (!isEmpty() && !val.isEmpty()) && (contains(val.min()) || contains(val.max()) || val.contains(this)); }
 
     /** Check whether the interior of the interval includes this number.
      * Interior means all numbers in the interval except its ends. */
-    bool interiorContains(C val) const { return min() < val && val < max(); }
+    bool interiorContains(C val) const { return !isEmpty() && min() < val && val < max(); }
     /** @brief Check whether the interior of the interval includes the given interval.
      * Interior means all numbers in the interval except its ends. */
-    bool interiorContains(in GenericInterval!C val) const { return min() < val.min() && val.max() < max(); }
+    bool interiorContains(in GenericInterval!C val) const { return (!isEmpty() && !val.isEmpty()) && min() < val.min() && val.max() < max(); }
     /** @brief Check whether the interiors of the intervals have any common elements.  A single point in common is not considered an intersection. */
-    bool interiorIntersects(in GenericInterval!C val) const { return math.fmax(min(), val.min()) < math.fmin(max(), val.max()); }
+    bool interiorIntersects(in GenericInterval!C val) const { return (!isEmpty() && !val.isEmpty()) && math.fmax(min(), val.min()) < math.fmin(max(), val.max()); }
     
     
     /+ Modify the interval +/
@@ -143,12 +146,17 @@ struct GenericInterval(C)
      * when the intervals did not have any common elements. */
     void unionWith(in GenericInterval!C a)
     {
-        if(a._b[0] < _b[0]) _b[0] = a._b[0];
-        if(a._b[1] > _b[1]) _b[1] = a._b[1];
+        if (a.isEmpty() || isEmpty()) return;
+        if (a._b[0] < _b[0]) _b[0] = a._b[0];
+        if (a._b[1] > _b[1]) _b[1] = a._b[1];
     }
 
+    /** Leave only the areas overlapping.
+     * If the rectangles do not have any points in common, the returned rectangle
+     * will be empty. */
     static GenericInterval!C intersect(in GenericInterval!C t, in GenericInterval!C o)
     {
+        if (t.isEmpty() || o.isEmpty()) return empty();
         C u = cast(C)math.fmax(t.min(), o.min());
         C v = cast(C)math.fmin(t.max(), o.max());
         if (u <= v) {
@@ -176,6 +184,7 @@ struct GenericInterval(C)
     { mixin("this = this "~op~" rhs;"); }
 
     protected C[2] _b;
+    protected bool _empty;
 }
 
 alias IntInterval = GenericInterval!IntCoord;
@@ -222,7 +231,7 @@ unittest
     assert(j.isEmpty());
 
     IntInterval m = IntInterval(-1, 1);
-    IntInterval n = IntInterval(0, 0);
+    IntInterval n = IntInterval.empty();
     IntInterval o = m & n;
     assert(o.isEmpty());
 }
