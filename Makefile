@@ -21,6 +21,8 @@ SOURCES = \
 	coord.d		\
 	interval.d	\
 	intpoint.d	\
+	linear.d	\
 	main.d		\
 	point.d		\
+	rect.d		\
 	transforms.d	
