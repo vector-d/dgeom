@@ -1,4 +1,4 @@
-/** 
+/*
  * 3x3 affine transformation matrix.
  *
  * Authors:
@@ -6,8 +6,24 @@
  *   Nathan Hurst <njh@mail.csse.monash.edu.au> (Geom::Affine class version of the above)
  *   Michael G. Sloan <mgsloan@gmail.com> (reorganization and additions)
  *   Krzysztof Kosiński <tweenk.pl@gmail.com> (removal of boilerplate, docs)
+ *   Liam P. White
  *
- * This code is in public domain.
+ * Copyright (C) 2002-2015 Authors
+ *
+ * This file is part of dgeom.
+ * 
+ * dgeom is free software: you can redistribute 
+ * it and/or modify it under the terms of the GNU General Public 
+ * License as published by the Free Software Foundation, either 
+ * version 3 of the License, or (at your option) any later version.
+ * 
+ * dgeom is distributed in the hope that it will 
+ * be useful, but WITHOUT ANY WARRANTY; without even the implied warranty 
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with dgeom.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 module geom.affine;
