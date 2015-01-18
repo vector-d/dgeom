@@ -35,8 +35,6 @@ import geom.rect;
 /* This class feels _way_ too much like D2. */
 struct Linear
 {
-    @disable this();
-
     /* Let's have a vagueness competition! */
     this(Coord aa, Coord b) { a = [aa, b]; }
     this(Coord aa) { a = [aa, aa]; }
@@ -79,13 +77,16 @@ struct Linear
     Linear opBinary(string op, T : Coord)(T rhs) const
     {
         static if (op == "+") { return Linear(a[0] + rhs, a[1] + rhs); }
-        else static if (op == "-") { return Linear(a[0] - rhs[0], a[1] - rhs[1]); }
+        else static if (op == "-") { return Linear(a[0] - rhs, a[1] - rhs); }
         else static if (op == "*") { return Linear(a[0] * rhs, a[1] * rhs); }
         else static if (op == "/") { return Linear(a[0] / rhs, a[1] / rhs); }
         else static assert(false, "Linear operator "~op~" not implemented");
     }
 
-    private Coord[2] a;
+    void opOpAssign(string op, T)(T rhs)
+    { mixin("this = this "~op~" rhs;"); }
+
+    private Coord[2] a = [0, 0];
 }
 
 /** Linear interpolation between two values. */

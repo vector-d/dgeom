@@ -62,6 +62,7 @@ struct GenericInterval(C)
     C max() const { return _b[1]; }
     C extent() const { return max() - min(); }
     C middle() const { return (max() + min()) / 2; }
+    C opIndex(size_t i) const { return _b[i]; }
     bool isSingular() const { return min() == max(); }
     bool isEmpty() const { return this._empty; }
 

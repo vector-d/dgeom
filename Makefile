@@ -25,4 +25,5 @@ SOURCES = \
 	main.d		\
 	point.d		\
 	rect.d		\
+	sbasis.d	\
 	transforms.d	
