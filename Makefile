@@ -22,6 +22,7 @@ SOURCES = \
 	bezier.d	\
 	choose.d	\
 	coord.d		\
+	curve.d		\
 	interval.d	\
 	intpoint.d	\
 	linear.d	\
