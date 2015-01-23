@@ -62,7 +62,7 @@ struct Linear
     Coord hat() const
     { return (a[1] + a[0])/2; }
     
-    bool opEquals(in Linear b)
+    bool opEquals(in Linear b) const
     { return a[0] == b[0] && a[1] == b[1]; }
     
     Linear opUnary(string s)() const if (s == "-") { return Linear(-a[0], -a[1]); } /* negation */

@@ -131,6 +131,8 @@ struct SBasis
 
     SBasis toSBasis() const { return SBasis(this); }
 
+    bool opEquals(in SBasis o) const { return d == o.d; }
+
     /** bound the error from term truncation
      * @param tail first term to chop
      * @return the largest possible error this truncation could give

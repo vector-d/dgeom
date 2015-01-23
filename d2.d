@@ -57,25 +57,25 @@ struct D2(T)
 
 /+ Template specializations (dunno if any of these will actually work) +/
 
-bool isZero()(in D2!T f, Coord eps = EPSILON)
+bool isZero(T)(in D2!T f, Coord eps = EPSILON)
 { return f[X].isZero(eps) && f[Y].isZero(eps); }
 
-bool isConstant()(in D2!T f, Coord eps = EPSILON)
+bool isConstant(T)(in D2!T f, Coord eps = EPSILON)
 { return f[X].isConstant(eps) && f[Y].isConstant(eps); }
 
-bool isFinite()(in D2!T f)
+bool isFinite(T)(in D2!T f)
 { return f[X].isFinite() && f[Y].isFinite(); }
 
-Point at0()(in D2!T f)
+Point at0(T)(in D2!T f)
 { return Point(f[X].at0(), f[Y].at0()); }
 
-Point at1()(in D2!T f)
+Point at1(T)(in D2!T f)
 { return Point(f[X].at1(), f[Y].at1()); }
 
-Point valueAt()(in D2!T f, Coord t)
+Point valueAt(T)(in D2!T f, Coord t)
 { return Point(f[X](t), f[Y](t)); }
 
-Point[] valueAndDerivatives()(in D2!T f, Coord t, uint n)
+Point[] valueAndDerivatives(T)(in D2!T f, Coord t, uint n)
 {
     Coord[] x = f[X].valueAndDerivatives(t, n),
             y = f[Y].valueAndDerivatives(t, n); // always returns a slice of size n+1
@@ -87,13 +87,13 @@ Point[] valueAndDerivatives()(in D2!T f, Coord t, uint n)
     return res;
 }
 
-D2!T reverse()(in D2!T a)
+D2!T reverse(T)(in D2!T a)
 { return D2!T(reverse(a[X]), reverse(a[Y])); }
 
-D2!T portion()(in D2!T a, Coord f, Coord t)
+D2!T portion(T)(in D2!T a, Coord f, Coord t)
 { return D2!T(portion(a[X], f, t), portion(a[Y], f, t)); }
 
-D2!T portion()(in D2!T a, Interval i)
+D2!T portion(T)(in D2!T a, Interval i)
 { return D2!T(portion(a[X], i), portion(a[Y], i)); }
 
 bool are_near(T)(in D2!T a, in D2!T b, Coord tol = EPSILON)
@@ -101,7 +101,7 @@ bool are_near(T)(in D2!T a, in D2!T b, Coord tol = EPSILON)
 
 import geom.sbasis;
 
-D2!SBasis toSBasis()(in D2!T f)
+D2!SBasis toSBasis(T)(in D2!T f)
 { return D2!SBasis(f[X].toSBasis(), f[Y].toSBasis()); }
 
 /** Calculates the 'dot product' or 'inner product' of \c a and \c b
@@ -122,10 +122,10 @@ T cross(T, U)(in D2!T a, in U b)
 { return a[1] * b[0] - a[0] * b[1]; }
 
 // equivalent to cw/ccw, for use in situations where rotation direction doesn't matter.
-D2!T rot90()(in D2!T a)
+D2!T rot90(T)(in D2!T a)
 { return D2!T(-a[Y], a[X]); }
 
-D2!T compose()(in D2!T a, in T b)
+D2!T compose(T)(in D2!T a, in T b)
 {
     D2!T r;
     r[X] = a[X].compose(b);
@@ -133,7 +133,7 @@ D2!T compose()(in D2!T a, in T b)
     return r;
 }
 
-D2!T compose_each()(in D2!T a, in D2!T b)
+D2!T compose_each(T)(in D2!T a, in D2!T b)
 {
     D2!T r;
     r[X] = a[X].compose(b[X]);
@@ -141,7 +141,7 @@ D2!T compose_each()(in D2!T a, in D2!T b)
     return r;
 }
 
-D2!T compose_each()(in T a, in D2!T b)
+D2!T compose_each(T)(in T a, in D2!T b)
 {
     D2!T r;
     for(uint i = 0; i < 2; i++)

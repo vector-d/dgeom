@@ -38,9 +38,11 @@ module geom.curve;
 public import geom.coord;
 
 import geom.affine;
+import geom.d2;
 import geom.interval;
 import geom.point;
 import geom.rect;
+import geom.sbasis;
 import geom.transforms;
 
 /**
@@ -84,13 +86,15 @@ interface Curve
     /** Evaluate the curve at a specified time value.
      * @param t Time value
      * @return \f$\mathbf{C}(t)\f$ */
-    final Point pointAt(Coord t) const { return pointAndDerivatives(t, 0)[0]; }
+    Point pointAt(Coord t) const;
+    /+ { return pointAndDerivatives(t, 0)[0]; } +/
 
     /** Evaluate one of the coordinates at the specified time value.
      * @param t Time value
      * @param d The dimension to evaluate
      * @return The specified coordinate of \f$\mathbf{C}(t)\f$ */
-    final Coord valueAt(Coord t, size_t d) const { return pointAt(t)[d]; }
+    Coord valueAt(Coord t, size_t d) const;
+    /+  { return pointAt(t)[d]; } +/
 
     /** Evaluate the function at the specified time value. Allows curves to be used
      * as functors. */
@@ -271,7 +275,7 @@ interface Curve
      * are implemented in terms of S-basis operations, so every curve has to provide a method
      * to convert it to an S-basis polynomial on two variables. See SBasis class reference
      * for more information. */
-     // XXX D2!SBasis toSBasis() const;
+    D2!SBasis toSBasis() const;
     
     /+  Miscellaneous +/
 
