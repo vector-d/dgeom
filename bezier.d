@@ -28,7 +28,7 @@
 module geom.bezier;
 
 public import geom.coord;
-
+import geom.point;
 
 struct Bezier
 {
@@ -323,16 +323,18 @@ Bezier portion(in Bezier a, Coord from, Coord to)
     return ret;
 }
 
-// XXX Todo: how to handle differing orders
-/+Point[] bezier_points(const D2<Bezier > & a) {
-    std::vector<Point> result;
-    for(unsigned i = 0; i <= a[0].order(); i++) {
-        Point p;
-        for(unsigned d = 0; d < 2; d++) p[d] = a[d][i];
-        result.push_back(p);
+import geom.d2;
+
+// Todo: how to handle differing orders
+Point[] bezier_points(in D2!Bezier a)
+{
+    Point[] result;
+    for (size_t i = 0; i <= a[0].order(); i++) {
+        Point p = [ a[0][i], a[1][i] ];
+        result ~= p;
     }
     return result;
-}+/
+}
 
 Bezier derivative(in Bezier a)
 {
