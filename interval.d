@@ -34,8 +34,6 @@ struct GenericInterval(C)
 {
     /+ Create intervals. +/
 
-    @disable this();
-
     /** Create an interval from another interval. */
     this(in GenericInterval!C o) { _b = o._b; _empty = false; }
     /** Create an interval that contains a single point. */
@@ -49,6 +47,19 @@ struct GenericInterval(C)
             _b[0] = v; _b[1] = u;
         }
         _empty = false;
+    }
+
+    /** Create an interval containing a range of values.
+     * The resulting interval will contain all values from the given range.
+     * The given range must not be empty.
+     * @param start Beginning of the range
+     * @param end   End of the range
+     * @return Interval that contains all values from [start, end). */
+    static GenericInterval!C from_array(in C[] arr)
+    {
+        auto result = GenericInterval!C(arr[0]);
+        foreach (i; arr) result.expandTo(i);
+        return result;
     }
 
     /** Create an empty interval.
@@ -178,8 +189,8 @@ struct GenericInterval(C)
     void opOpAssign(string op, T)(T rhs)
     { mixin("this = this "~op~" rhs;"); }
 
-    protected C[2] _b;
-    protected bool _empty;
+    protected C[2] _b = [0, 0];
+    protected bool _empty = false;
 }
 
 alias IntInterval = GenericInterval!IntCoord;

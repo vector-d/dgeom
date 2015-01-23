@@ -18,6 +18,8 @@ clean:
 
 SOURCES = \
 	affine.d	\
+	bezier.d	\
+	choose.d	\
 	coord.d		\
 	interval.d	\
 	intpoint.d	\

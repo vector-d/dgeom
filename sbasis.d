@@ -53,7 +53,6 @@ struct SBasis
     /* Construct from an array of linear fragments. */
     this(const(Linear[]) ls) { d = ls.dup; }
 
-
     /+ Get information about the SBasis +/
 
     Coord at0() const { return empty() ? 0 : d[0][0]; }
@@ -96,6 +95,17 @@ struct SBasis
         foreach (i; d)
             if(!i.isFinite()) return false;
         return true;
+    }
+
+    /** Returns a function which reverses the domain
+     * useful for reversing a parameteric curve.
+     */
+    SBasis reverse() const
+    {
+        SBasis result = SBasis(this);
+        foreach(k, m; d)
+            result.d[k] = m.reverse();
+        return result;
     }
 
     /** Compute the value and the first n derivatives
@@ -447,6 +457,54 @@ Interval bounds_fast(in SBasis sb, int order)
     if (order > 0) res *= math.pow(.25, order);
     return res;
 }
+
+/*Interval bounds_exact(in SBasis a)
+{
+    Interval result = Interval(a.at0(), a.at1());
+    SBasis df = a.derivative();
+    Coord[] extrema = roots(df);
+    foreach(i; extrema) {
+        result.expandTo(a(i));
+    }
+    return result;
+}*/
+
+
+/** Find a small interval that bounds a(t) for t in i to order order
+ * @param sb sbasis function
+ * @param i domain interval
+ * @param order number of terms
+ * @return interval
+ */
+Interval bounds_local(in SBasis sb, in Interval i, int order = 0)
+{
+    Coord t0=i.min(), t1=i.max(), lo=0., hi=0.;
+    for (int j = cast(int)sb.size()-1; j >= order; j--) {
+        Coord a=sb[j][0];
+        Coord b=sb[j][1];
+
+        Coord t = 0;
+        if (lo<0) t = ((b-a)/lo+1)*0.5;
+        if (lo>=0 || t<t0 || t>t1) {
+            lo = math.fmin(a*(1-t0)+b*t0+lo*t0*(1-t0),a*(1-t1)+b*t1+lo*t1*(1-t1));
+        } else {
+            lo = lerp(t, a+lo*t, b);
+        }
+
+        if (hi>0) t = ((b-a)/hi+1)*0.5;
+        if (hi<=0 || t<t0 || t>t1) {
+            hi = math.fmax(a*(1-t0)+b*t0+hi*t0*(1-t0),a*(1-t1)+b*t1+hi*t1*(1-t1));
+        } else {
+            hi = lerp(t, a+hi*t, b);
+        }
+    }
+    Interval res = Interval(lo,hi);
+    if (order > 0) res*= math.pow(.25,order);
+    return res;
+}
+
+SBasis derivative(SBasis o)
+{ o.derive(); return o; }
 
 /*
   Local Variables:
