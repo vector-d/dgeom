@@ -238,13 +238,15 @@ struct Zoom
     /** Zoom between rectangles.
      * Given two rectangles, compute a zoom that maps one to the other.
      * Rectangles are assumed to have the same aspect ratio. */
-    /*Zoom map_rect(in Rect old_r, in Rect new_r)
-    { XXX Rect
+    import geom.rect;
+
+    Zoom map_rect(in Rect old_r, in Rect new_r)
+    {
         Zoom ret = Zoom(1);
         ret._scale = new_r.width() / old_r.width();
         ret._trans = new_r.min() - old_r.min();
         return ret;
-    }*/
+    }
 
     Zoom opBinary(string op)(Zoom rhs) const if (op == "*")
     { return Zoom(_scale * rhs._scale, Translate(_trans + rhs._trans / _scale)); }
