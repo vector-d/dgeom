@@ -28,6 +28,7 @@
 module geom.bezier;
 
 public import geom.coord;
+import geom.interval;
 import geom.point;
 
 struct Bezier
@@ -100,6 +101,21 @@ struct Bezier
         return [left, right];
     }
 
+    Coord[] roots() const
+    {
+        import geom.solve_bezier;
+        Coord[] solutions = find_bezier_roots(this, 0, 1);
+        return solutions;
+    }
+
+    Coord[] roots(in Interval ivl) const
+    {
+        import geom.solve_bezier;
+        Coord[] solutions;
+        find_bernstein_roots(solutions, Bezier(this), 0, ivl.min(), ivl.max());
+        return solutions;
+    }
+
     Bezier forward_difference(uint k)
     {
         import geom.choose;
@@ -160,7 +176,7 @@ struct Bezier
         }
         return b;
     }
-    
+
     Coord opCall(Coord t) const { return valueAt(t); }
     
     // These are the only direct mutators
@@ -183,6 +199,8 @@ struct Bezier
     }
 
     protected static Bezier from_array(in Coord[] c) { Bezier b; b.c_ = c.dup; return b; }
+
+    /** coefficients of the polynomial */
     private Coord[] c_ = [];
 }
 

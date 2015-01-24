@@ -30,4 +30,5 @@ SOURCES = \
 	point.d		\
 	rect.d		\
 	sbasis.d	\
+	solve_bezier.d	\
 	transforms.d	
