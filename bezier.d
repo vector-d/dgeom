@@ -94,9 +94,9 @@ struct Bezier
 
     Bezier[2] subdivide(Coord t) const
     {
-        Bezier left = withOrder(order());
-        Bezier right = withOrder(order());
-        casteljau_subdivision(t, c_, left.c_, right.c_, order());
+        Coord[][2] s = casteljau_subdivision(t, c_);
+        Bezier left = from_array(s[X]);
+        Bezier right = from_array(s[Y]);
         return [left, right];
     }
 
@@ -186,63 +186,39 @@ struct Bezier
     private Coord[] c_ = [];
 }
 
-/** Perform Casteljau subdivision of a Bezier polynomial.
+/** Perform De Casteljau subdivision of a Bezier polynomial.
  * Given an array of coefficients and a time value, computes two new Bernstein-Bezier basis
  * polynomials corresponding to the \f$[0, t]\f$ and \f$[t, 1]\f$ intervals of the original one.
  * @param t Time value
  * @param v Array of input coordinates
- * @param left Output polynomial corresponding to \f$[0, t]\f$
- * @param right Output polynomial corresponding to \f$[t, 1]\f$
- * @param order Order of the input polynomial, equal to one less the number of coefficients
- * @return Value of the polynomial at @a t 
- *
+ *    The order of the input polynomial, equal to one less the number of coefficients, is
+ *    inferred from the length of the input array.
+ * @return Pair of polynomials
+ *    [0] Polynomial corresponding to \f$[0, t]\f$
+ *    [1] Polynomial corresponding to \f$[t, 1]\f$
  */
-private T casteljau_subdivision(T)(Coord t, in T[] v, ref T[] left, ref T[] right, size_t order)
+private T[][2] casteljau_subdivision(T)(Coord t, in T[] v)
 {
     import geom.linear : lerp;
-    import std.algorithm : copy;
-    import std.range : take;
 
-    if (left.length < order + 1 && right.length < order + 1) {
-        return bernsteinValueAt(t, v, order);
-    }
-
-    // The Horner-like scheme gives very slightly different results, but we need
-    // the result of subdivision to match exactly with Bezier's valueAt function.
-    T val = bernsteinValueAt(t, v, order);
-
-    if (right.length < order + 1) {
-        if (left != v) {
-            copy(take(v, order + 1), left);
-        }
-        for (size_t i = order; i > 0; --i) {
-            for (size_t j = i; j <= order; ++j) {
-                left[j] = lerp(t, left[j-1], left[j]);
-            }
-        }
-        left[order] = val;
-        return val;
-    }
-
-    if (right != v) {
-        copy(take(v, order + 1), right);
-    }
+    size_t order = v.length - 1;
+    T[] left = new T[order + 1];
+    T[] right = v.dup;
 
     for (size_t i = 1; i <= order; ++i) {
-        if (left) {
-            left[i-1] = right[0];
-        }
+        left[i-1] = right[0];
         for (size_t j = i; j > 0; --j) {
             right[j-1] = lerp(t, right[j-1], right[j]);
         }
     }
 
-    if (left.length < order + 1) {
-        left[order] = val;
-    }
-
+    // The Horner-like scheme gives very slightly different results, but we need
+    // the result of subdivision to match exactly with Bezier's valueAt function.
+    T val = bernsteinValueAt(t, v, order);
+    left[order] = val;
     right[0] = val;
-    return right[0];
+
+    return [left, right];
 }
 
 private T bernsteinValueAt(T)(Coord t, in T[] c_, size_t n)
@@ -306,12 +282,12 @@ Bezier portion(in Bezier a, Coord from, Coord to)
             if (to == 1) {
                 break;
             }
-            casteljau_subdivision(to, ret.c_, ret.c_, empty_slice, ret.order());
-            break; 
+            ret.c_ = casteljau_subdivision(to, ret.c_)[X];
+            break;
         }
-        casteljau_subdivision(from, ret.c_, empty_slice, ret.c_, ret.order());
+        ret.c_ = casteljau_subdivision(from, ret.c_)[Y];
         if (to == 1) break;
-        casteljau_subdivision((to - from) / (1 - from), ret.c_, ret.c_, empty_slice, ret.order());
+        ret.c_ = casteljau_subdivision((to - from) / (1 - from), ret.c_)[X];
         // to protect against numerical inaccuracy in the above expression, we manually set
         // the last coefficient to a value evaluated directly from the original polynomial
         ret.c_[ret.order()] = a.valueAt(to);
