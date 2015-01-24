@@ -40,7 +40,6 @@ public import geom.coord;
 import geom.affine;
 import geom.d2;
 import geom.interval;
-import geom.nearest_point;
 import geom.point;
 import geom.rect;
 import geom.sbasis;
