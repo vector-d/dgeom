@@ -37,7 +37,6 @@ import geom.transforms;
 struct Point
 {
     /* Creating points */
-    @disable this(); // just make this a compile error
 
     /** Construct a point from its coordinates. */
     this(Coord x, Coord y)
@@ -201,7 +200,7 @@ struct Point
         }
     }
 
-    private Coord[2] _pt;
+    private Coord[2] _pt = [0, 0];
 }
 
 

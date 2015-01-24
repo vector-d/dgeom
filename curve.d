@@ -40,6 +40,7 @@ public import geom.coord;
 import geom.affine;
 import geom.d2;
 import geom.interval;
+import geom.nearest_point;
 import geom.point;
 import geom.rect;
 import geom.sbasis;
@@ -214,7 +215,8 @@ interface Curve
      * @param b Maximum time value to consider; \f$a < b\f$
      * @return \f$q \in [a, b]: ||\mathbf{C}(q) - \mathbf{p}|| = 
                \inf(\{r \in \mathbb{R} : ||\mathbf{C}(r) - \mathbf{p}||\})\f$ */
-    Coord nearestPoint(in Point p, Coord a = 0, Coord b = 1) const;
+    /+ XXX Piecewise final Coord nearestPoint(in Point p, Coord a = 0, Coord b = 1) const
+    { return nearest_point(p, toSBasis(), a, b); }
 
     /** A version that takes an Interval. */
     final Coord nearestPoint(in Point p, in Interval i) const
@@ -229,7 +231,7 @@ interface Curve
 
     /** A version that takes an Interval. */
     final Coord[] allNearestPoints(in Point p, in Interval i)
-    { return allNearestPoints(p, i.min(), i.max()); }
+    { return allNearestPoints(p, i.min(), i.max()); }+/
 
     /** Compute the arc length of this curve.
      * For a curve \f$\mathbf{C}(t) = (C_x(t), C_y(t))\f$, arc length is defined for 2D curves as
@@ -267,7 +269,17 @@ interface Curve
      * @code
         Curve c_reverse = c.reverse();
         Point tangent = - c_reverse.unitTangentAt(0); @endcode */
-    Point unitTangentAt(Coord t, uint n = 3) const;
+    final Point unitTangentAt(Coord t, uint n = 3) const
+    {
+        Point[] derivs = pointAndDerivatives(t, n);
+        foreach (deriv; derivs) {
+            Coord length = deriv.length();
+            if (!are_near(length, 0)) {
+                return deriv / length;
+            }
+        }
+        return Point(0, 0);
+    }
 
     /** Convert the curve to a symmetric power basis polynomial.
      * Symmetric power basis polynomials (S-basis for short) are numerical representations

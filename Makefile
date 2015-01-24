@@ -20,6 +20,7 @@ SOURCES = \
 	affine.d	\
 	d2.d		\
 	bezier.d	\
+	bezier_curve.d	\
 	choose.d	\
 	coord.d		\
 	curve.d		\
@@ -31,4 +32,5 @@ SOURCES = \
 	rect.d		\
 	sbasis.d	\
 	solve_bezier.d	\
+	sbasis_to_bezier.d	\
 	transforms.d	

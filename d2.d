@@ -27,6 +27,7 @@ module geom.d2;
 
 public import geom.coord;
 
+import geom.interval;
 import geom.point; // TODO: convert Point to D2!Coord
 
 /**
@@ -45,6 +46,9 @@ struct D2(T)
 
     this(const(T[2]) arr)
     { f = [T(arr[0]), T(arr[1])]; }
+    
+    this(in D2!T o)
+    { this(o.f); }
 
     ref inout(T) opIndex(size_t i) inout
     { return f[i]; }
@@ -52,10 +56,30 @@ struct D2(T)
     bool opEquals(in D2!T o) const
     { return f[X] == o.f[X] && f[Y] == o.f[Y]; }
 
+    D2!T opBinary(string op, T)(T b) const
+    {
+        D2!T r;
+        static if (op == "+") {
+            r[X] = this[X] + b[X];
+            r[Y] = this[Y] + b[Y];
+            return r;
+        } else static if (op == "-") {
+            r[X] = this[X] - b[X];
+            r[Y] = this[Y] - b[Y];
+            return r;
+        } else static assert(false, "D2!("~T.stringof~") operator "~op~" not implemented");
+    }
+    
+    void opOpAssign(string op, T)(T b)
+    { mixin("this = this "~op~" b; "); }
+
     private T[2] f;
 }
 
-/+ Template specializations (dunno if any of these will actually work) +/
+// My one qualm with the D programming language.
+// Overload resolution.
+
+/+ Template specializations +/
 
 bool isZero(T)(in D2!T f, Coord eps = EPSILON)
 { return f[X].isZero(eps) && f[Y].isZero(eps); }
@@ -75,12 +99,12 @@ Point at1(T)(in D2!T f)
 Point valueAt(T)(in D2!T f, Coord t)
 { return Point(f[X](t), f[Y](t)); }
 
-Point[] valueAndDerivatives(T)(in D2!T f, Coord t, uint n)
+Point[] valueAndDerivatives(T)(in D2!T f, Coord t, size_t n)
 {
     Coord[] x = f[X].valueAndDerivatives(t, n),
             y = f[Y].valueAndDerivatives(t, n); // always returns a slice of size n+1
 
-    Point[n+1] res;
+    Point[] res = new Point[n];
     foreach(i, ref r; res) {
         r = Point(x[i], y[i]);
     }
@@ -91,10 +115,10 @@ D2!T reverse(T)(in D2!T a)
 { return D2!T(reverse(a[X]), reverse(a[Y])); }
 
 D2!T portion(T)(in D2!T a, Coord f, Coord t)
-{ return D2!T(portion(a[X], f, t), portion(a[Y], f, t)); }
+{ return D2!T(a[X].portion(f, t), a[Y].portion(f, t)); }
 
 D2!T portion(T)(in D2!T a, Interval i)
-{ return D2!T(portion(a[X], i), portion(a[Y], i)); }
+{ return D2!T(a[X].portion(i), a[Y].portion(i)); }
 
 bool are_near(T)(in D2!T a, in D2!T b, Coord tol = EPSILON)
 { return are_near(a[0], b[0], tol) && are_near(a[1], b[1], tol); }
@@ -148,6 +172,19 @@ D2!T compose_each(T)(in T a, in D2!T b)
         r[i] = compose(a,b[i]);
     return r;
 }
+
+import geom.rect;
+
+// Some D2 Fragment implementation which requires rect:
+
+Rect bounds_fast(T)(in D2!T a)
+{ return Rect(a[X].bounds_fast(), a[Y].bounds_fast()); }
+
+Rect bounds_exact(T)(in D2!T a)
+{ return Rect(a[X].bounds_exact(), a[Y].bounds_exact()); }
+
+Rect bounds_local(T)(in D2!T a, in Interval t)
+{ return Rect(a[X].bounds_local(t), a[Y].bounds_local(t)); }
 
 /*
   Local Variables:

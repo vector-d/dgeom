@@ -38,6 +38,7 @@ struct Bezier
 
     // Construct an n-order bezier
     this(A...)(A a) { foreach (t; a) c_ ~= t; }
+    this(Coord[] a...) { c_ = a.dup; }
 
     static Bezier withOrder(size_t order)
     { Bezier b; b.c_.length = order + 1; return b; }
@@ -178,6 +179,19 @@ struct Bezier
     }
 
     Coord opCall(Coord t) const { return valueAt(t); }
+    
+    Bezier opBinary(string op, T)(T b) const
+    {
+        static if (op == "+") {
+            Bezier result = Bezier(this);
+            foreach (ref t; result.c_) t += b;
+            return result;
+        } else static if (op == "-") {
+            Bezier result = Bezier(this);
+            foreach (ref t; result.c_) t += b;
+            return result;
+        }
+    }
     
     // These are the only direct mutators
     ref inout(Coord) opIndex(size_t ix) inout { return c_[ix]; }
@@ -353,16 +367,27 @@ Bezier integral(in Bezier a)
     return inte;
 }
 
+import geom.sbasis;
+
+SBasis toSBasis(in Bezier b)
+{
+    import geom.sbasis_to_bezier;
+    SBasis sb;
+    bezier_to_sbasis(sb, b);
+    return sb;
+}
+
 import geom.interval;
 
 Interval bounds_fast(in Bezier b)
 { return Interval.from_array(b.c_); }
 
 //TODO: better bounds exact
-/+ Interval bounds_exact(in Bezier b)
+Interval bounds_exact(in Bezier b)
 {
-    return bounds_exact(b.toSBasis());
-}+/
+    assert(false);
+    //return bounds_exact(b.toSBasis());
+}
 
 Interval bounds_local(in Bezier b, Interval i)
 {
