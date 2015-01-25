@@ -432,7 +432,7 @@ static SBasis multiply_add(in SBasis a, in SBasis b, SBasis c)
     return c;
 }
 
-Interval bounds_fast(in SBasis sb, int order)
+Interval bounds_fast(in SBasis sb, int order = 0)
 {
     Interval res = Interval(0,0); // an empty sbasis is 0.
 

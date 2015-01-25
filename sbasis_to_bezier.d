@@ -71,7 +71,7 @@ alias binomial = choose!Coord;
  * n is always the polynomial degree, i. e. the Bezier order
  * sz is the number of bezier handles.
  */
-void sbasis_to_bezier(ref Bezier bz, in SBasis sb, size_t sz)
+void sbasis_to_bezier(ref Bezier bz, in SBasis sb, size_t sz = 0)
 {
     if (sb.size() == 0) {
         throw new Exception("size of sb is too small");
@@ -121,7 +121,7 @@ void sbasis_to_bezier(ref Bezier bz, in SBasis sb, size_t sz)
  *
  * sz is always the polynomial degree, i. e. the Bezier order
  */
-void sbasis_to_bezier(ref Point[] bz, in D2!SBasis sb, size_t sz)
+void sbasis_to_bezier(ref Point[] bz, in D2!SBasis sb, size_t sz = 0)
 {
     Bezier bzx, bzy;
     if (sz == 0) {
