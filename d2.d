@@ -41,6 +41,9 @@ struct D2(T)
 {
     @disable this();
 
+    // for use by Piecewise
+    alias output_type = Point;
+
     this(T a, T b)
     { f = [a, b]; }
 
@@ -50,6 +53,10 @@ struct D2(T)
     this(in D2!T o)
     { this(o.f); }
 
+    // why does this exist?
+    this(in Point a)
+    {  f = [T(a[X]), T(a[Y])]; }
+
     ref inout(T) opIndex(size_t i) inout
     { return f[i]; }
     
@@ -58,7 +65,7 @@ struct D2(T)
 
     D2!T opBinary(string op, T)(T b) const
     {
-        D2!T r;
+        D2!T r = [0, 0];
         static if (op == "+") {
             r[X] = this[X] + b[X];
             r[Y] = this[Y] + b[Y];
@@ -72,6 +79,12 @@ struct D2(T)
     
     void opOpAssign(string op, T)(T b)
     { mixin("this = this "~op~" b; "); }
+
+    Point opCall(Coord t) const
+    {
+        Point p = [ f[X](t), f[Y](t) ];
+        return p;
+    }
 
     private T[2] f;
 }
@@ -99,7 +112,7 @@ Point at1(T)(in D2!T f)
 Point valueAt(T)(in D2!T f, Coord t)
 { return Point(f[X](t), f[Y](t)); }
 
-Point[] valueAndDerivatives(T)(in D2!T f, Coord t, size_t n)
+Point[] valueAndDerivatives(T)(in D2!T f, Coord t, uint n)
 {
     Coord[] x = f[X].valueAndDerivatives(t, n),
             y = f[Y].valueAndDerivatives(t, n); // always returns a slice of size n+1

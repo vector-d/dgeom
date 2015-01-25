@@ -33,6 +33,9 @@ import geom.point;
 
 struct Bezier
 {
+    // for use by Piecewise
+    alias output_type = Coord;
+
     // Copy constructor
     this(in Bezier b) { c_ = b.c_.dup; }
 

@@ -38,6 +38,9 @@ import geom.interval;
 */
 struct SBasis
 {
+    // for use by Piecewise
+    alias output_type = Coord;
+
     /* Construct an SBasis from a single value. */
     this(Coord a) { push_back(Linear(a)); }
 
@@ -221,8 +224,7 @@ struct SBasis
 
     /+ Array-like operations +/
 
-    ref inout(Linear) opIndex(size_t i) inout
-    { return d[i]; }
+    ref inout(Linear) opIndex(size_t i) inout { return d[i]; }
     ref inout(Linear) back() inout { return d[$-1]; }
     ref inout(Linear) at(size_t i) inout { return d[i]; }
 
