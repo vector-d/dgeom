@@ -299,8 +299,8 @@ SBasis compose(in SBasis a, in SBasis b, uint k)
 
 SBasis portion(in SBasis t, Coord from, Coord to)
 {
-    double fv = t.valueAt(from);
-    double tv = t.valueAt(to);
+    Coord fv = t.valueAt(from);
+    Coord tv = t.valueAt(to);
     SBasis ret = compose(t, SBasis(Linear(from, to)));
     ret.at0() = fv;
     ret.at1() = tv;
