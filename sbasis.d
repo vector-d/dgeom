@@ -80,7 +80,7 @@ struct SBasis
     {
         if (empty()) return true;
         foreach (i; d)
-            if (i.isZero(eps)) return false;
+            if (!i.isZero(eps)) return false;
         return true;
     }
 
@@ -509,6 +509,47 @@ Interval bounds_local(in SBasis sb, in Interval i, int order = 0)
 
 SBasis derivative(SBasis o)
 { o.derive(); return o; }
+
+
+unittest
+{
+    import geom.bezier;
+
+    auto zero = SBasis(Bezier(0.0).toSBasis());
+    auto unit = SBasis(Bezier(0.0,1.0).toSBasis());
+    auto hump = SBasis(Bezier(0,1,0).toSBasis());
+    auto wiggle = SBasis(Bezier(0,1,-2,3).toSBasis());
+
+    assert(Bezier(0,0,0,0).toSBasis().isZero());
+    assert(Bezier(0,1,2,3).toSBasis().isFinite());
+
+    // note: "size" of sbasis equals half the number of coefficients
+    assert(2u == Bezier(0,2,4,5).toSBasis().size());
+    assert(2u == hump.size());
+
+    assert(0.0 == wiggle.at0());
+    assert(3.0 == wiggle.at1());
+    assert(0.0 == wiggle.valueAt(0.5));
+    assert(0.0 == wiggle(0.5));
+
+    Coord[] vnd = wiggle.valueAndDerivatives(0.5, 5);
+    assert(vnd == [0, 0, 12, 72, 0, 0]);
+
+    //assert(roots(wiggle) == [0, 0.5, 0.5]);
+    
+    // The results of our rootfinding are at the moment fairly inaccurate.
+    //Coord eps = 5e-4;
+
+    /+Coord[][] tests = [
+         [0],
+         [0.5],
+         [0.25, 0.75],
+         [0.5, 0.5],
+         [0, 0.2, 0.6, 0.6, 1],
+         [.1,.2,.3,.4,.5,.6],
+         [0.25,0.25,0.25,0.75,0.75,0.75] ];+/
+    
+}
 
 /*
   Local Variables:
