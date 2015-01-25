@@ -28,6 +28,7 @@ SOURCES = \
 	intpoint.d	\
 	linear.d	\
 	main.d		\
+	piecewise.d	\
 	point.d		\
 	rect.d		\
 	sbasis.d	\

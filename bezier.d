@@ -388,8 +388,7 @@ Interval bounds_fast(in Bezier b)
 //TODO: better bounds exact
 Interval bounds_exact(in Bezier b)
 {
-    assert(false);
-    //return bounds_exact(b.toSBasis());
+    return geom.sbasis.bounds_exact(b.toSBasis());
 }
 
 Interval bounds_local(in Bezier b, Interval i)

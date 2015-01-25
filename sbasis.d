@@ -200,7 +200,7 @@ struct SBasis
     {
         static if (op == "+") {
             if (isZero()) return SBasis(Linear(k, k));
-            SBasis a = this;
+            SBasis a = SBasis(this);
             a[0] += k;
             return a;
         } else static if (op == "-") {
@@ -220,7 +220,6 @@ struct SBasis
 
     void opOpAssign(string op, T)(T rhs)
     { mixin("this = this "~op~" rhs;"); }
-
 
     /+ Array-like operations +/
 
@@ -306,7 +305,8 @@ SBasis portion(in SBasis t, Coord from, Coord to)
     ret.at1() = tv;
     return ret;
 }
-SBasis portion(in SBasis t, Interval ivl) { return compose(t, SBasis(Linear(ivl.min(), ivl.max()))); }
+
+//SBasis portion(in SBasis t, Interval ivl) { return compose(t, SBasis(Linear(ivl.min(), ivl.max()))); }
 
 /* Inversion algorithm. The notation is certainly very misleading. The
 pseudocode should say:

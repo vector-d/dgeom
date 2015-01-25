@@ -28,6 +28,7 @@ module geom.d2;
 public import geom.coord;
 
 import geom.interval;
+import geom.bezier; // FIXME
 import geom.point; // TODO: convert Point to D2!Coord
 
 /**
@@ -39,8 +40,6 @@ import geom.point; // TODO: convert Point to D2!Coord
  */
 struct D2(T)
 {
-    @disable this();
-
     // for use by Piecewise
     alias output_type = Point;
 
@@ -63,16 +62,16 @@ struct D2(T)
     bool opEquals(in D2!T o) const
     { return f[X] == o.f[X] && f[Y] == o.f[Y]; }
 
-    D2!T opBinary(string op, T)(T b) const
+    D2!T opBinary(string op, U)(U b) const
     {
-        D2!T r = [0, 0];
+        D2!T r = D2!T.init;
         static if (op == "+") {
-            r[X] = this[X] + b[X];
-            r[Y] = this[Y] + b[Y];
+            r[X] = f[X] + b[X];
+            r[Y] = f[Y] + b[Y];
             return r;
         } else static if (op == "-") {
-            r[X] = this[X] - b[X];
-            r[Y] = this[Y] - b[Y];
+            r[X] = f[X] - b[X];
+            r[Y] = f[Y] - b[Y];
             return r;
         } else static assert(false, "D2!("~T.stringof~") operator "~op~" not implemented");
     }
@@ -84,6 +83,14 @@ struct D2(T)
     {
         Point p = [ f[X](t), f[Y](t) ];
         return p;
+    }
+
+    D2!T portion(Coord d, Coord t) const
+    { return D2!T(f[X].portion(d, t), f[Y].portion(d, t)); }
+
+    D2!T portion()(Coord d, Coord t) const if (is(T == Bezier))
+    {
+        return D2!Bezier(f[X].portion(d, t), f[Y].portion(d, t));
     }
 
     private T[2] f;
@@ -127,11 +134,11 @@ Point[] valueAndDerivatives(T)(in D2!T f, Coord t, uint n)
 D2!T reverse(T)(in D2!T a)
 { return D2!T(reverse(a[X]), reverse(a[Y])); }
 
-D2!T portion(T)(in D2!T a, Coord f, Coord t)
+/+D2!T portion(T)(in D2!T a, Coord f, Coord t)
 { return D2!T(a[X].portion(f, t), a[Y].portion(f, t)); }
 
 D2!T portion(T)(in D2!T a, Interval i)
-{ return D2!T(a[X].portion(i), a[Y].portion(i)); }
+{ return D2!T(a[X].portion(i), a[Y].portion(i)); }+/
 
 bool are_near(T)(in D2!T a, in D2!T b, Coord tol = EPSILON)
 { return are_near(a[0], b[0], tol) && are_near(a[1], b[1], tol); }

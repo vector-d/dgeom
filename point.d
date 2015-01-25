@@ -49,6 +49,9 @@ struct Point
     this(IntPoint p)
     { _pt = [p[X], p[Y]]; }
 
+    this(in Point p)
+    { _pt = p._pt; }
+
     /** Construct a point from its polar coordinates.
      * The angle is specified in radians, in the mathematical convention (increasing
      * counter-clockwise from +X). */
