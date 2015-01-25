@@ -58,8 +58,8 @@ struct SBasis
 
     /+ Get information about the SBasis +/
 
-    Coord at0() const { return empty() ? 0 : d[0][0]; }
-    Coord at1() const { return empty() ? 0 : d[0][1]; }
+    ref inout(Coord) at0() inout { return d[0][0]; }
+    ref inout(Coord) at1() inout { return d[0][1]; }
 
     int degreesOfFreedom() const { return cast(int)size() * 2; }
     
@@ -275,8 +275,11 @@ SBasis compose(in SBasis a, in SBasis b)
     SBasis s = multiply(ctmp, b);
     SBasis r;
 
-    for (size_t i = a.size() - 1; i >= 0; i--) {
-        r = multiply_add(r, s, SBasis(Linear(a[i][0])) - b*a[i][0] + b*a[i][1]);
+    for (long i = a.size() - 1; i >= 0; i--) {
+        r = multiply_add(r, s, 
+            SBasis(Linear(a[i][0]))
+             - b*a[i][0]
+             + b*a[i][1]);
     }
     return r;
 }
@@ -293,6 +296,17 @@ SBasis compose(in SBasis a, in SBasis b, uint k)
     r.truncate(k);
     return r;
 }
+
+SBasis portion(in SBasis t, Coord from, Coord to)
+{
+    double fv = t.valueAt(from);
+    double tv = t.valueAt(to);
+    SBasis ret = compose(t, SBasis(Linear(from, to)));
+    ret.at0() = fv;
+    ret.at1() = tv;
+    return ret;
+}
+SBasis portion(in SBasis t, Interval ivl) { return compose(t, SBasis(Linear(ivl.min(), ivl.max()))); }
 
 /* Inversion algorithm. The notation is certainly very misleading. The
 pseudocode should say:
@@ -462,16 +476,17 @@ Interval bounds_fast(in SBasis sb, int order = 0)
     return res;
 }
 
-/*Interval bounds_exact(in SBasis a)
+Interval bounds_exact(in SBasis a)
 {
+    import geom.sbasis_roots;
     Interval result = Interval(a.at0(), a.at1());
     SBasis df = a.derivative();
     Coord[] extrema = roots(df);
-    foreach(i; extrema) {
+    foreach (i; extrema) {
         result.expandTo(a(i));
     }
     return result;
-}*/
+}
 
 
 /** Find a small interval that bounds a(t) for t in i to order order
@@ -507,13 +522,13 @@ Interval bounds_local(in SBasis sb, in Interval i, int order = 0)
     return res;
 }
 
-SBasis derivative(SBasis o)
-{ o.derive(); return o; }
-
+SBasis derivative(in SBasis x)
+{ SBasis o = SBasis(x); o.derive(); return o; }
 
 unittest
 {
     import geom.bezier;
+    import geom.sbasis_roots;
 
     auto zero = SBasis(Bezier(0.0).toSBasis());
     auto unit = SBasis(Bezier(0.0,1.0).toSBasis());
@@ -535,20 +550,69 @@ unittest
     Coord[] vnd = wiggle.valueAndDerivatives(0.5, 5);
     assert(vnd == [0, 0, 12, 72, 0, 0]);
 
-    //assert(roots(wiggle) == [0, 0.5, 0.5]);
+    assert(roots(wiggle) == [0, 0.5, 0.5]);
+    
+    SBasis linear_root(double t)
+    { return SBasis(Linear(0-t, 1-t)); }
+
+    SBasis array_roots(Coord[] x)
+    {
+        SBasis b = SBasis(1);
+        for (size_t i = 0; i < x.length; i++) {
+            b = geom.sbasis.multiply(b, linear_root(x[i]));
+        }
+        return b;
+    }
+    
+    bool are_near(in Coord[] a, in Coord[] b, Coord eps = EPSILON)
+    {
+        if (a.length != b.length) return false;
+        foreach(i, x; a)
+            if (!geom.coord.are_near(x, b[i], eps)) return false;
+        return true;
+    }
     
     // The results of our rootfinding are at the moment fairly inaccurate.
-    //Coord eps = 5e-4;
+    Coord eps = 5e-4;
 
-    /+Coord[][] tests = [
-         [0],
+    Coord[][] tests = [
+         [0.],
          [0.5],
          [0.25, 0.75],
-         [0.5, 0.5],
-         [0, 0.2, 0.6, 0.6, 1],
-         [.1,.2,.3,.4,.5,.6],
-         [0.25,0.25,0.25,0.75,0.75,0.75] ];+/
-    
+         [0.5, 0.5], ];
+         //[0, 0.2, 0.6, 0.6, 1], ];
+         //[.1,.2,.3,.4,.5,.6], // there's a 1 on the end (?)
+         //[0.25,0.25,0.25,0.75,0.75,0.75] ];
+
+    foreach (test_i; tests) {
+        SBasis b = array_roots(test_i);
+        assert(are_near(test_i, roots(b), eps));
+    }
+
+    SBasis reverse_wiggle = wiggle.reverse();
+    assert(reverse_wiggle.at0() == wiggle.at1());
+    assert(reverse_wiggle.at1() == wiggle.at0());
+    assert(reverse_wiggle.valueAt(0.5) == wiggle.valueAt(0.5));
+    assert(reverse_wiggle.valueAt(0.25) == wiggle.valueAt(0.75));
+    assert(reverse_wiggle.reverse() == wiggle);
+
+    for (size_t i = 1; i < 10000; ++i) {
+        Coord t = math.fabs(i / 10000. - 1.);
+        SBasis input = wiggle;
+        SBasis[2] result;
+        result[X] = geom.sbasis.portion(input, 0, t);
+        result[Y] = geom.sbasis.portion(input, t, 1);
+        
+        // the endpoints must correspond exactly
+        assert(result[X].at0() == input.at0());
+        assert(result[X].at1() == result[Y].at0());
+        assert(result[Y].at1() == input.at1());
+
+        // ditto for valueAt
+        assert(result[X].valueAt(0) == input.valueAt(0));
+        assert(result[X].valueAt(1) == result[Y].valueAt(0));
+        assert(result[Y].valueAt(1) == input.valueAt(1));
+    }
 }
 
 /*
