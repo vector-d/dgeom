@@ -33,6 +33,7 @@ SOURCES = \
 	point.d		\
 	rect.d		\
 	sbasis.d	\
+	sbasis_curve.d	\
 	sbasis_roots.d	\
 	solve_bezier.d	\
 	sbasis_to_bezier.d	\

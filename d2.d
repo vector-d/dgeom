@@ -27,8 +27,9 @@ module geom.d2;
 
 public import geom.coord;
 
-import geom.interval;
+import geom.affine;
 import geom.bezier; // FIXME
+import geom.interval;
 import geom.point; // TODO: convert Point to D2!Coord
 
 /**
@@ -73,7 +74,15 @@ struct D2(T)
             r[X] = f[X] - b[X];
             r[Y] = f[Y] - b[Y];
             return r;
-        } else static assert(false, "D2!("~T.stringof~") operator "~op~" not implemented");
+        } else static assert(false, "D2!("~T.stringof~") operator "~T.stringof~op~U.stringof~" not implemented");
+    }
+
+    D2!T opBinary(string op, U : Affine)(U m) const if (op == "*")
+    {
+        D2!T ret;
+        ret[X] = f[X] * m[X] + f[Y] * m[X + 2] + m[X + 4];
+        ret[Y] = f[X] * m[Y] + f[Y] * m[Y + 2] + m[Y + 4];
+        return ret;
     }
     
     void opOpAssign(string op, T)(T b)
