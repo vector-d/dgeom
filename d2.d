@@ -140,6 +140,9 @@ D2!T reverse(T)(in D2!T a)
 D2!T portion(T)(in D2!T a, Interval i)
 { return D2!T(a[X].portion(i), a[Y].portion(i)); }+/
 
+D2!T derivative(T)(in D2!T a)
+{ return D2!T(a[X].derivative(), a[Y].derivative()); }
+
 bool are_near(T)(in D2!T a, in D2!T b, Coord tol = EPSILON)
 { return are_near(a[0], b[0], tol) && are_near(a[1], b[1], tol); }
 

@@ -206,8 +206,11 @@ interface Curve
      * @param b Maximum time value to consider; \f$a < b\f$
      * @return \f$q \in [a, b]: ||\mathbf{C}(q) - \mathbf{p}|| = 
                \inf(\{r \in \mathbb{R} : ||\mathbf{C}(r) - \mathbf{p}||\})\f$ */
-    /+ XXX Piecewise final Coord nearestPoint(in Point p, Coord a = 0, Coord b = 1) const
-    { return nearest_point(p, toSBasis(), a, b); }
+    final Coord nearestPoint(in Point p, Coord a = 0, Coord b = 1) const
+    {
+        import geom.nearest_time;
+        return nearest_time(p, toSBasis(), a, b);
+    }
 
     /** A version that takes an Interval. */
     final Coord nearestPoint(in Point p, in Interval i) const
@@ -218,11 +221,15 @@ interface Curve
      * @param a Minimum time value to consider
      * @param b Maximum time value to consider; \f$a < b\f$
      * @return Vector of points closest and equally far away from the query point */
-    Coord[] allNearestPoints(in Point p, Coord from = 0, Coord to = 1) const;
+    final Coord[] allNearestPoints(in Point p, Coord from = 0, Coord to = 1) const
+    {
+        import geom.nearest_time;
+        return all_nearest_times(p, toSBasis(), from, to);
+    }
 
     /** A version that takes an Interval. */
     final Coord[] allNearestPoints(in Point p, in Interval i)
-    { return allNearestPoints(p, i.min(), i.max()); }+/
+    { return allNearestPoints(p, i.min(), i.max()); }
 
     /** Compute the arc length of this curve.
      * For a curve \f$\mathbf{C}(t) = (C_x(t), C_y(t))\f$, arc length is defined for 2D curves as

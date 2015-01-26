@@ -56,6 +56,12 @@ struct SBasis
     /* Construct from an array of linear fragments. */
     this(const(Linear[]) ls) { d = ls.dup; }
 
+    this(size_t n, in Linear l)
+    {
+        d.length = n;
+        foreach (ref i; d) i = l;
+    }
+
     /+ Get information about the SBasis +/
 
     ref inout(Coord) at0() inout { return d[0][0]; }
@@ -193,8 +199,18 @@ struct SBasis
 
             assert(result.size() == out_size);
             return result;
+        } else static if (op == "*") {
+            SBasis c = SBasis(size(), Linear());
+            for (size_t i = 0; i < size(); i++)
+                c[i] = d[i] * b;
+            return c;
+        } else static if (op == "/") {
+            return opBinary!"*"(1./b);
         } else static assert(false, "SBasis operator "~op~" not implemented");
     }
+    
+    SBasis opBinary(string op, T : SBasis)(in T b) const if (op == "*")
+    { return multiply(this, b); }
     
     SBasis opBinary(string op, T : Coord)(T k) const
     {

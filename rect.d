@@ -287,6 +287,39 @@ struct GenericRect(C)
     protected CInterval[2] f;
 }
 
+Coord distanceSq(in Point p, in Rect rect)
+{
+    Coord dx = 0, dy = 0;
+    if ( p[X] < rect.left() ) {
+        dx = p[X] - rect.left();
+    } else if ( p[X] > rect.right() ) {
+        dx = rect.right() - p[X];
+    }
+    if (p[Y] < rect.top() ) {
+        dy = rect.top() - p[Y];
+    } else if (  p[Y] > rect.bottom() ) {
+        dy = p[Y] - rect.bottom();
+    }
+    return dx*dx+dy*dy;
+}
+
+Coord distance(in Point p, in Rect rect)
+{
+    // copy of distanceSq, because we need to use hypot()
+    Coord dx = 0, dy = 0;
+    if ( p[X] < rect.left() ) {
+        dx = p[X] - rect.left();
+    } else if ( p[X] > rect.right() ) {
+        dx = rect.right() - p[X];
+    }
+    if (p[Y] < rect.top() ) {
+        dy = rect.top() - p[Y];
+    } else if (  p[Y] > rect.bottom() ) {
+        dy = p[Y] - rect.bottom();
+    }
+    return math.hypot(dx, dy);
+}
+
 /** Return the smallest integer rectangle which contains this one. */
 IntRect roundOutwards(in Rect r)
 { return IntRect(geom.interval.roundOutwards(r[X]), geom.interval.roundOutwards(r[Y])); }
