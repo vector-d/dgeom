@@ -19,12 +19,14 @@ clean:
 SOURCES = \
 	affine.d	\
 	angle.d		\
-	d2.d		\
 	bezier.d	\
 	bezier_curve.d	\
 	choose.d	\
 	coord.d		\
 	curve.d		\
+	d2.d		\
+	ellipse.d	\
+	elliptical_arc.d\
 	interval.d	\
 	intpoint.d	\
 	linear.d	\

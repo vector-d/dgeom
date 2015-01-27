@@ -97,6 +97,41 @@ Coord lerp(Coord t, Coord a, Coord b)
 Linear reverse(in Linear a)
 { return Linear(a[1], a[0]); }
 
+import geom.sbasis;
+
+/** Compute the sine of a to k terms
+ * @param b linear function
+ * @return sbasis sin(a)
+ * It is recommended to use the piecewise version unless you have good reason.
+ */
+SBasis sin(Linear b, int k)
+{
+    SBasis s = SBasis(k+2, Linear());
+    s[0] = Linear(math.sin(b[0]), math.sin(b[1]));
+    double tr = s[0].tri();
+    double t2 = b.tri();
+    s[1] = Linear(math.cos(b[0])*t2 - tr, -math.cos(b[1])*t2 + tr);
+
+    t2 *= t2;
+    for (int i = 0; i < k; i++) {
+        auto bo = Linear(4*(i+1)*s[i+1][0] - 2*s[i+1][1],
+                  -2*s[i+1][0] + 4*(i+1)*s[i+1][1]);
+        bo -= s[i]*(t2/(i+1));
+
+
+        s[i+2] = bo / cast(Coord)i+2;
+    }
+
+    return s;
+}
+
+/** Compute the cosine of a
+ * @param b linear function
+ * @return sbasis cos(a)
+ * It is recommended to use the piecewise version unless you have good reason.
+ */
+SBasis cos(Linear bo, int k)
+{ return sin(Linear(bo[0] + math.PI/2, bo[1] + math.PI/2), k); }
 
 /* Really lame unittest */
 unittest

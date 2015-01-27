@@ -96,6 +96,23 @@ struct Angle
         return a;
     }
 
+    Angle opBinary(string op, T : Angle)(T b) const
+    {
+        Angle x = Angle(this);
+        static if (op == "+") {
+            x._angle += b._angle;
+            x._normalize();
+            return x;
+        } else static if (op == "-") {
+            x._angle -= b._angle;
+            x._normalize();
+            return x;
+        } else static assert(false, "Angle operator "~op~" not implemented");
+    }
+
+    void opOpAssign(string op, T)(T b)
+    { mixin("this = this "~op~" Angle(b);"); }
+
 private:
     void _normalize()
     { _angle -= floor(_angle * (1.0/(2*M_PI))) * 2*M_PI; }
@@ -114,18 +131,21 @@ private:
  *
  * This class is immutable - you cannot change the values of start and end angles
  * without creating a new instance of this class.
- *
- * @ingroup Primitives
  */
-struct AngleInterval
+
+/* this needs to be a class so that EllipticalArc can inherit from it */
+class AngleInterval
 {
-    @disable this();
+    //@disable this();
 
     this(Angle s, Angle e, bool cw = false)
     { _start_angle = s; _end_angle = e; _sweep = cw; }
 
     this(Coord s, Coord e, bool cw = false)
     { _start_angle = s; _end_angle = e; _sweep = cw; }
+
+    this(in AngleInterval o)
+    { _start_angle = o._start_angle; _end_angle = o._end_angle; _sweep = o._sweep; }
 
     /** Get the angular coordinate of the interval's initial point
      * @return Angle in range \f$[0,2\pi)\f$ corresponding to the start of arc */
@@ -134,7 +154,7 @@ struct AngleInterval
     /** Get the angular coordinate of the interval's final point
      * @return Angle in range \f$[0,2\pi)\f$ corresponding to the end of arc */
     Angle finalAngle() const { return _end_angle; }
-    bool isDegenerate() const { return initialAngle() == finalAngle(); }
+    bool is_degenerate() const { return initialAngle() == finalAngle(); }
 
     /** Get an angle corresponding to the specified time value. */
     Angle angleAt(Coord t) const
@@ -175,6 +195,8 @@ protected:
     Angle _start_angle;
     Angle _end_angle;
     bool _sweep;
+
+    this() {}
 };
 
 /*

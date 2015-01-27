@@ -96,7 +96,7 @@ class SBasisCurve : Curve
     Coord[] roots(Coord v, size_t d) const { return geom.sbasis_roots.roots(inner[d] - v); }
 
     // XXX implement the integral solution for this
-    Coord length(Coord tolerance) const
+    Coord length(Coord tolerance = 0.01) const
     {
         import geom.bezier_curve, geom.sbasis_to_bezier;
         Point[] pts;
