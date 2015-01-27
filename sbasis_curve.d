@@ -105,7 +105,7 @@ class SBasisCurve : Curve
     }
     SBasisCurve portion(Coord f, Coord t) const { return new SBasisCurve(inner.portion(f, t)); }
 
-    SBasisCurve transformed(in Affine m) const { return new SBasisCurve(inner * m); }
+    void transform(in Affine m) { inner *= m; }
     
     SBasisCurve opBinary(string op)(in Translate m) const if (op == "*")
     {

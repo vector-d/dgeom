@@ -411,13 +411,18 @@ class EllipticalArc : AngleInterval, Curve
         return rarc;
     }
     
-    EllipticalArc transformed(in Affine m) const
+    void transform(in Affine m)
     {
         import geom.ellipse;
         auto e = Ellipse(center(X), center(Y), ray(X), ray(Y), _rot_angle);
         auto et = e.transformed(m);
         Point inner_point = pointAt(0.5);
-        return et.arc(initialPoint() * m, inner_point * m, finalPoint() * m, isSVGCompliant());
+        auto x = et.arc(initialPoint() * m, inner_point * m, finalPoint() * m, isSVGCompliant());
+        _initial_point = x._initial_point; _final_point = x._final_point;
+        _rays = x._rays;
+        _rot_angle = x._rot_angle; _large_arc = x._large_arc;
+        _sweep = x._sweep;
+        _updateCenterAndAngles(isSVGCompliant());
     }
 
 protected:

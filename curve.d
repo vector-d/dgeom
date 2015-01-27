@@ -157,7 +157,7 @@ interface Curve
      * underlying type (as is the case for horizontal and vertical line segments).
      * @param m Affine describing the affine transformation
      * @return Pointer to a new, transformed curve */
-    Curve transformed(in Affine m) const;
+    void transform(in Affine m);
 
     /** Translate the curve (i.e. displace by Point)
      * This method modifies the curve; all curve types are closed under

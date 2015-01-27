@@ -108,15 +108,13 @@ class BezierCurve : Curve
     BezierCurve reverse() const
     { return new BezierCurve(inner[X].reverse(), inner[Y].reverse()); }
 
-    BezierCurve transformed(in Affine m) const
+    void transform(in Affine m)
     {
-        BezierCurve ret = new BezierCurve();
         Point[] ps = points();
-        for (size_t i = 0; i <= order(); i++) {
-            ps[i] = ps[i] * m;
+        foreach (ref i; ps) {
+            i = i * m;
         }
-        ret.setPoints(ps);
-        return ret;
+        setPoints(ps);
     }
 
     BezierCurve opBinary(string op)(in Translate m) const if (op == "*")
