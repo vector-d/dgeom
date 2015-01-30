@@ -1,6 +1,14 @@
 # Object files
 *.o
+*.obj
+*.exe
 lib2geom
 
 # Extra files
 *.d~
+
+# Dub files
+.dub
+docs.json
+__dummy.html
+*.selections.json

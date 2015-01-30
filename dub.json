@@ -1,0 +1,11 @@
+{
+	"name": "dgeom",
+	"description": "lib2geom, but (actively) rewritten in D.",
+	"copyright": "Copyright (C) 2006-2015 authors",
+	"license": "GPL Version 3",
+	"authors": [
+		"Liam P. White"
+	],
+	"dependencies": {
+	}
+}

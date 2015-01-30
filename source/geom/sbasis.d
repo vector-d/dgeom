@@ -240,6 +240,7 @@ struct SBasis
     /+ Array-like operations +/
 
     ref inout(Linear) opIndex(size_t i) inout { return d[i]; }
+
     ref inout(Linear) back() inout { return d[$-1]; }
     ref inout(Linear) at(size_t i) inout { return d[i]; }
 

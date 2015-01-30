@@ -1,0 +1,5 @@
+
+shared static this()
+{
+	/* Empty */
+}
