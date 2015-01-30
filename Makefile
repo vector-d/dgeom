@@ -17,6 +17,7 @@ clean:
 	rm $(OBJ_NAME)
 
 SOURCES = \
+	source/app.d		\
 	source/geom/affine.d		\
 	source/geom/angle.d		\
 	source/geom/bezier.d		\
@@ -30,7 +31,6 @@ SOURCES = \
 	source/geom/interval.d		\
 	source/geom/intpoint.d		\
 	source/geom/linear.d		\
-	dummy_main.d		\
 	source/geom/nearest_time.d	\
 	source/geom/path.d		\
 	source/geom/piecewise.d		\

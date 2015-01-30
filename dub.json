@@ -7,5 +7,17 @@
 		"Liam P. White"
 	],
 	"dependencies": {
-	}
+	},
+	"configurations": [
+		{
+			"name": "application",
+			"targetType": "executable"
+		},
+		{
+			"name": "library",
+			"excludedSourceFiles": [
+				"source/app.d"
+			]
+		}
+	]
 }

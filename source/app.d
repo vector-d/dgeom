@@ -1,5 +1,10 @@
 
 shared static this()
 {
-	/* Empty */
+    /* Empty */
+}
+
+void main()
+{
+    /* Dummy main for executing unit tests */
 }
