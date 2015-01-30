@@ -12,3 +12,4 @@ lib2geom
 docs.json
 __dummy.html
 *.selections.json
+__test__library__
