@@ -240,7 +240,6 @@ struct SBasis
     /+ Array-like operations +/
 
     ref inout(Linear) opIndex(size_t i) inout { return d[i]; }
-    ref inout(Linear) opIndex(long i) inout { return d[cast(uint)i]; }
 
     ref inout(Linear) back() inout { return d[$-1]; }
     ref inout(Linear) at(size_t i) inout { return d[i]; }
@@ -288,16 +287,19 @@ struct SBasis
  */
 SBasis compose(in SBasis a, in SBasis b)
 {
+    import std.range : iota, retro;	
+
     SBasis ctmp = SBasis(Linear(1, 1)) - b;
     SBasis s = multiply(ctmp, b);
     SBasis r;
 
-    for (long i = a.size() - 1; i >= 0; i--) {
+    foreach (i; iota(0, a.size).retro) {
         r = multiply_add(r, s, 
             SBasis(Linear(a[i][0]))
              - b*a[i][0]
              + b*a[i][1]);
     }
+
     return r;
 }
 
