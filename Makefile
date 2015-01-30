@@ -17,28 +17,28 @@ clean:
 	rm $(OBJ_NAME)
 
 SOURCES = \
-	affine.d	\
-	angle.d		\
-	bezier.d	\
-	bezier_curve.d	\
-	choose.d	\
-	coord.d		\
-	curve.d		\
-	d2.d		\
-	ellipse.d	\
-	elliptical_arc.d\
-	interval.d	\
-	intpoint.d	\
-	linear.d	\
-	main.d		\
-	nearest_time.d	\
-	path.d		\
-	piecewise.d	\
-	point.d		\
-	rect.d		\
-	sbasis.d	\
-	sbasis_curve.d	\
-	sbasis_roots.d	\
-	solve_bezier.d	\
-	sbasis_to_bezier.d	\
-	transforms.d	
+	source/geom/affine.d		\
+	source/geom/angle.d		\
+	source/geom/bezier.d		\
+	source/geom/bezier_curve.d	\
+	source/geom/choose.d		\
+	source/geom/coord.d		\
+	source/geom/curve.d		\
+	source/geom/d2.d		\
+	source/geom/ellipse.d		\
+	source/geom/elliptical_arc.d	\
+	source/geom/interval.d		\
+	source/geom/intpoint.d		\
+	source/geom/linear.d		\
+	dummy_main.d		\
+	source/geom/nearest_time.d	\
+	source/geom/path.d		\
+	source/geom/piecewise.d		\
+	source/geom/point.d		\
+	source/geom/rect.d		\
+	source/geom/sbasis.d		\
+	source/geom/sbasis_curve.d	\
+	source/geom/sbasis_roots.d	\
+	source/geom/solve_bezier.d	\
+	source/geom/sbasis_to_bezier.d	\
+	source/geom/transforms.d	
