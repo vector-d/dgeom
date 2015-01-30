@@ -248,8 +248,37 @@ interface Curve
     Coord[] roots(Coord v, size_t d) const;
 
     /** Compute the winding number of the curve at the specified point.
-     * @todo Does this makes sense for curves at all? */
-    // XXX final int winding(in Point p) const { return root_winding(this, p); }
+     * Does this makes sense for curves at all? */
+    final int winding(in Point p) const
+    {
+        import std.algorithm : sort;
+
+        Coord[] ts = roots(p[Y], Y);
+        if (ts.length == 0) return 0;
+        sort(ts);
+
+        // skip endpoint roots when they are local maxima on the Y axis
+        // this follows the convention used in other winding routines,
+        // i.e. that the bottommost coordinate is not part of the shape
+        bool ignore_0 = unitTangentAt(0)[Y] <= 0;
+        bool ignore_1 = unitTangentAt(1)[Y] >= 0;
+
+        int wind = 0;
+        foreach (t; ts) {
+            if ((t == 0 && ignore_0) || (t == 1) && ignore_1) continue;
+            if (valueAt(t, X) > p[X]) { // root is ray intersection
+                Point tangent = unitTangentAt(t);
+                if (tangent[Y] > p[X]) {
+                    // at the point of intersection, curve goes in +Y direction,
+                    // so it winds in the direction of positive angles
+                    ++wind;
+                } else if (tangent[Y] < 0) {
+                    --wind;
+                }
+            }
+        }
+        return wind;
+    }
 
     /** Compute a vector tangent to the curve.
      * This will return an unit vector (a Point with length() equal to 1) that denotes a vector

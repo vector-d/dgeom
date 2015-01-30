@@ -32,6 +32,7 @@ SOURCES = \
 	linear.d	\
 	main.d		\
 	nearest_time.d	\
+	path.d		\
 	piecewise.d	\
 	point.d		\
 	rect.d		\

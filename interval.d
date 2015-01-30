@@ -88,6 +88,12 @@ struct GenericInterval(C)
     /** Check whether the intervals have any common elements. */
     bool intersects(in GenericInterval!C val) const
     { return (!isEmpty() && !val.isEmpty()) && (contains(val.min()) || contains(val.max()) || val.contains(this)); }
+    /** Check whether the number is contained in the union of the interior and the lower boundary. */
+    bool lowerContains(C val)
+    { return !isEmpty && min() <= val && val < max(); }
+    /** Check whether the given interval is contained in the union of the interior and the lower boundary. */
+    bool lowerContains(in GenericInterval!C val) const
+    { return (!isEmpty && !val.isEmpty()) && min() <= val.min() && val.max() < max(); }
 
     /** Check whether the interior of the interval includes this number.
      * Interior means all numbers in the interval except its ends. */

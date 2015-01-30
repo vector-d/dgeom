@@ -163,7 +163,7 @@ class BezierCurveN(size_t N) : BezierCurve
     /+ Construct Bezier curves +/
 
     /** Construct a Bezier curve of the specified order with all points zero. */
-    this() { super(Bezier.withOrder(degree), Bezier.withOrder(degree)); }
+    this() { super(Bezier.withOrder(N), Bezier.withOrder(N)); }
 
     /** Construct from 2D Bezier polynomial. */
     this(in D2!Bezier x) { super(x); }
@@ -171,21 +171,20 @@ class BezierCurveN(size_t N) : BezierCurve
     /** Construct from two 1D Bezier polynomials of the same order. */
     this(Bezier x, Bezier y) { super(x, y); }
 
+    /** Construct from another Bezier curve. */
+    this(in BezierCurveN!N o) { super(o.inner[X], o.inner[Y]); }
+
     /** Construct a Bezier curve from a vector of its control points. */
     this(in Point[] points...)
     {
         size_t ord = points.length - 1;
-        if (ord != degree) throw new Exception("BezierCurve!N does not match number of points");
+        if (ord != N) throw new Exception("BezierCurve!N does not match number of points");
         for (size_t d = 0; d < 2; ++d) {
             inner[d] = Bezier.withOrder(ord);
             for (size_t i = 0; i <= ord; i++)
                 inner[d][i] = points[i][d];
         }
     }
-    
-    /** Construct an n-order Bezier curve with compiler-determined degree */
-    static auto fromPoints(A...)(A a)
-    { return BezierCurveN!(a.length)(a); }
 
     /** Divide a Bezier curve into two curves
      * @param t Time value
@@ -196,15 +195,15 @@ class BezierCurveN(size_t N) : BezierCurve
     {
         Bezier[2] sx = inner[X].subdivide(t);
         Bezier[2] sy = inner[Y].subdivide(t);
-        return [BezierCurveN!N(sx[0], sy[0]), BezierCurveN!N(sx[1], sy[1])];
+        return [new BezierCurveN!N(sx[0], sy[0]), new BezierCurveN!N(sx[1], sy[1])];
     }
     
     /+ Curve interface +/
 
-    BezierCurveN!N duplicate() const
+    override BezierCurveN!N duplicate() const
     { return new BezierCurveN!N(this); }
 
-    BezierCurveN!N portion(Coord f, Coord t) const
+    override BezierCurveN!N portion(Coord f, Coord t) const
     {
         static if (N == 1) {
             return new BezierCurveN!1(pointAt(f), pointAt(t));
@@ -213,40 +212,32 @@ class BezierCurveN(size_t N) : BezierCurve
         }
     }
 
-    BezierCurveN!N reverse() const
+    override BezierCurveN!N reverse() const
     {
-        static if (degree == 1) {
+        static if (N == 1) {
             return new BezierCurveN!1(finalPoint(), initialPoint()); 
         } else {
             return new BezierCurveN!N(inner[X].reverse(), inner[Y].reverse());
         }
     }
 
-    BezierCurveN!N transformed(in Affine m) const
-    {
-        static if (degree == 1) {
-            return new BezierCurveN!1(initialPoint() * m, finalPoint() * m);
-        } else {
-            BezierCurveN ret = new BezierCurveN();
-            Point[] ps = points();
-            for (size_t i = 0;  i <= degree; i++) {
-                ps[i] = ps[i] * m;
-            }
-            ret.setPoints(ps);
-            return ret;
-        }
-    }
-
-    BezierCurve!N opBinary(string op)(in Translate m) const if (op == "*")
+    override BezierCurveN!N opBinary(string op)(in Translate m) const if (op == "*")
     {
         BezierCurve!N ret = new BezierCurve!N(this);
         ret.inner += m.vector();
         return ret;
     }
 
-    BezierCurve!N derivative() const
+    override BezierCurveN!0 derivative()() const if (N == 0)
+    { return new BezierCurveN!N(this); }
+
+    override BezierCurveN!(N-1) derivative()() const if (N != 0)
     { return new BezierCurveN!(N-1)(inner[X].derivative(), inner[Y].derivative()); }
 }
+
+/** Construct an n-order Bezier curve with compiler-determined degree */
+auto bezierFromPoints(A...)(A a)
+{ return new BezierCurveN!(a.length-1)(a); }
 
 /** Compute the length of a bezier curve given by an array of its control points */
 Coord bezier_length(in Point[] points, Coord tolerance)
