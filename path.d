@@ -674,7 +674,7 @@ unittest
     p.insert(p.size(), f);
 
     // appending
-    p.appendNew!(BezierCurveN!3)(Point(17,0), Point(18,1), Point(19,-3));
+    p.appendNew!CubicBezier(Point(17,0), Point(18,1), Point(19,-3));
 
     // erasing
     p.erase(0);

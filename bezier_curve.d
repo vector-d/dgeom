@@ -239,6 +239,19 @@ class BezierCurveN(size_t N) : BezierCurve
 auto bezierFromPoints(A...)(A a)
 { return new BezierCurveN!(a.length-1)(a); }
 
+/** Line segment.
+ * Line segments are Bezier curves of order 1. They have only two control points,
+ * the starting point and the ending point. */
+alias LineSegment = BezierCurveN!(1);
+
+/** Quadratic (order 2) Bezier curve. */
+alias QuadraticBezier = BezierCurveN!(2);
+
+/** Cubic (order 3) Bezier curve. */
+alias CubicBezier = BezierCurveN!(3);
+
+/++++++++++++++++++++++++/
+
 /** Compute the length of a bezier curve given by an array of its control points */
 Coord bezier_length(in Point[] points, Coord tolerance)
 {
