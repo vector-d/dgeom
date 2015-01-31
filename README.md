@@ -8,6 +8,7 @@ Written and maintained by [liamwhite](http://github.com/liamwhite) and [Mihail-K
 * [dub package manager](https://github.com/D-Programming-Language/dub)
 * D compiler
   * Digital Mars D compiler (dmd) 2.xx or newer is **preferred**
+  * LLVM D2 compiler (ldc2) 3.4x or newer
   * GNU D compiler (gdc) 4.8x or newer
 
 > GNU make can be used to build dgeom if necessary, but requires different makefile settings for different compilers
