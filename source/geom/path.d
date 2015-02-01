@@ -691,6 +691,7 @@ unittest
     p.erase(0);
     p.erase_last();
     p.erase(p.size()-2, Stitching.STITCH_DISCONTINUOUS);
+    p.erase(p.size()-3, p.size());
 
     // transformations
     Affine m = Translate(1, 0);
@@ -699,6 +700,7 @@ unittest
     
     p *= m;
 
+    // I mean, there's not a whole lot you can do here...
     assert(p.initialPoint() == ip * m);
     assert(p.finalPoint() == fp * m);
 
