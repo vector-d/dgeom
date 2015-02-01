@@ -170,8 +170,13 @@ class PathBuilder : PathSink
     /// Retrieve the path
     const(PathSequence) peek() const { return _pathset; }
 
-    /// Clear the stored path vector
-    void clear() { _pathset.clear(); }
+    /// Clear the stored path sequence
+    void clear()
+    {
+        _in_path = false;
+        _path.clear();
+        _pathset.clear();
+    }
 
 protected:
     bool _in_path = false;
