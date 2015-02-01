@@ -32,6 +32,7 @@ import std.math;
 public import geom.coord;
 import geom.angle;
 import geom.affine;
+import geom.bezier_curve;
 import geom.curve;
 import geom.d2;
 import geom.interval;
@@ -107,7 +108,10 @@ class EllipticalArc : AngleInterval, Curve
 
     /** Get the line segment connecting the arc's endpoints.
      * @return A linear segment with initial and final point correspoding to those of the arc. */
-    Point[2] chord() const { return [_initial_point, _final_point]; }
+    LineSegment chord() const { return bezierFromPoints(_initial_point, _final_point); }
+
+    /// Check whether both rays are nonzero
+    bool isChord() const { return _rays[0] == 0 || _rays[Y] == 0; }
 
     /** Change the arc's parameters. */ 
     void set(in Point ip, Coord rx, Coord ry, Coord rot_angle, bool large_arc, bool sweep, in Point fp)
