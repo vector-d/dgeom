@@ -484,26 +484,23 @@ class Path
         do_update();
     }
 
-    void erase(size_t pos, Stitching stitching = Stitching.NO_STITCHING) { erase(pos, pos, stitching); }
+    void erase(size_t pos, Stitching stitching = Stitching.NO_STITCHING) { erase(pos, pos+1, stitching); }
 
     void erase(size_t first, size_t last, Stitching stitching = Stitching.NO_STITCHING)
     {
         import core.exception;
-        import std.stdio : writeln;
-        if (last < first || last >= _curves.length) throw new RangeError;
+        if (last <= first || last >= _curves.length) throw new RangeError;
 
         // Slice the array in half at the erasure point.
         Curve[] before = _curves[0 .. first];
         Curve[] after = _curves[last .. $];
+        Curve[] fixup = [];
 
         // Optionally stitch at the point of erasure to prevent discontinuity.
-        if (stitching) {
-            Curve[] fixup;
+        if (stitching)
             stitch(first, last, fixup);
-            _curves = before ~ fixup ~ after;
-        } else {
-            _curves = before ~ after;
-        }
+
+        _curves = before ~ fixup ~ after;
 
         assert(_curves[$-1] == _closing_seg);
         do_update();
@@ -511,6 +508,15 @@ class Path
 
     /** erase last segment of path */
     void erase_last() { erase(size() - 1); }
+
+    void start(in Point p)
+    {
+        if (_curves.length > 1) {
+            clear();
+        }
+        _closing_seg.setInitial(p);
+        _closing_seg.setFinal(p);
+    }
 
     /** Get the first point in the path. */
     Point initialPoint() const { return _closing_seg[1]; }
@@ -523,6 +529,11 @@ class Path
         if (stitching)
             stitchTo(curve.initialPoint());
         do_append(curve.duplicate());
+    }
+
+    void append(in Path other, Stitching stitching = Stitching.NO_STITCHING)
+    {
+        insert(size(), other._curves, stitching);
     }
 
     /** Append a stitching segment ending at the specified point. */
@@ -626,8 +637,8 @@ private:
             }
         } else if (first != last && first_replaced != 0 && last_replaced != _curves.length - 1) {
             // the input array contains no path, fill it with a segment stitching first to last
-            if (first.initialPoint() != _curves[last_replaced - 1].finalPoint()) {
-                Curve stitch = new StitchSegment(_curves[last_replaced - 1].finalPoint(), first.initialPoint());
+            if (first.initialPoint() != last.initialPoint()) {
+                Curve stitch = new StitchSegment(first.initialPoint(), last.initialPoint());
                 source = stitch ~ source;
             }
         }
@@ -671,7 +682,7 @@ unittest
     auto e = bezierFromPoints(Point(12,0), Point(13,1), Point(14,0));
     auto f = bezierFromPoints(Point(14,0), Point(15,-1), Point(16,0));
     p.insert(p.size(), e);
-    p.insert(p.size(), f);
+    p.append(f);
 
     // appending
     p.appendNew!CubicBezier(Point(17,0), Point(18,1), Point(19,-3));
@@ -680,6 +691,7 @@ unittest
     p.erase(0);
     p.erase_last();
     p.erase(p.size()-2, Stitching.STITCH_DISCONTINUOUS);
+    p.erase(p.size()-3, p.size());
 
     // transformations
     Affine m = Translate(1, 0);
@@ -688,6 +700,7 @@ unittest
     
     p *= m;
 
+    // I mean, there's not a whole lot you can do here...
     assert(p.initialPoint() == ip * m);
     assert(p.finalPoint() == fp * m);
 

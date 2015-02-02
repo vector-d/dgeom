@@ -17,7 +17,7 @@ clean:
 	rm $(OBJ_NAME)
 
 SOURCES = \
-	source/app.d		\
+	source/app.d			\
 	source/geom/affine.d		\
 	source/geom/angle.d		\
 	source/geom/bezier.d		\
@@ -33,6 +33,8 @@ SOURCES = \
 	source/geom/linear.d		\
 	source/geom/nearest_time.d	\
 	source/geom/path.d		\
+	source/geom/path_builder.d	\
+	source/geom/path_sequence.d	\
 	source/geom/piecewise.d		\
 	source/geom/point.d		\
 	source/geom/rect.d		\
@@ -41,4 +43,5 @@ SOURCES = \
 	source/geom/sbasis_roots.d	\
 	source/geom/solve_bezier.d	\
 	source/geom/sbasis_to_bezier.d	\
+	source/geom/svg_elliptical_arc.d\
 	source/geom/transforms.d	

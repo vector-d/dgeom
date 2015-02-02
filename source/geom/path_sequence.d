@@ -168,18 +168,24 @@ class PathSequence
         return bound;
     }
 
-    PathSequence opOpAssign(string op, T)(T b) if (op == "*")
+    PathSequence opOpAssign(string op, T)(T b)
     {
-        if (!empty())
-            foreach (ref it; _data)
-                it *= b;
-        return this;
+        static if (op == "*") {
+            if (!empty())
+                foreach (ref it; _data)
+                    it *= b;
+            return this;
+        } else static if (op == "~") { 
+            _data ~= b;
+            return this;
+        }
+        else static assert(false, "PathSequence operator "~op~" not implemented");
     }
 
-    PathSequence opBinary(string op, T)(T b) const if (op == "*")
+    PathSequence opBinary(string op, T)(T b) const
     {
         auto ret = new PathSequence(this);
-        ret *= b;
+        mixin("ret "~op~"= b");
         return ret;
     }
 
