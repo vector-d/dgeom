@@ -35,6 +35,7 @@ import std.typecons;
 import geom.bezier_curve;
 import geom.coord;
 import geom.point;
+import geom.transforms;
 
 Point[4] createCurve(Point[] window)
 {
@@ -183,6 +184,11 @@ real dirc(Point point0, Point point1 = Point())
 Point slide(Point point0, Point point1, Coord t)
 {
 	return point0 + (point1 - point0) * t;
+}
+
+Point spin(Point v, real theta)
+{
+	return v * Rotate(theta);
 }
 
 Point bezierPointAtT(Point[4] cubic, Coord t)
