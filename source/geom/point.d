@@ -255,7 +255,7 @@ Point rot90(in Point p)
  * @return Point on a line between a and b. The ratio of its distance from a
  *         and the distance between a and b will be equal to t.
  * @relates Point */
-Point lerp(in double t, in Point a, in Point b)
+Point lerp(in Point a, in Point b, in double t)
 { return (a * (1 - t) + b * t); }
 
 /** Compute the dot product of a and b.

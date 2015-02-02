@@ -2,12 +2,10 @@
  * Bezier Fitting
  *
  * Authors:
- *    Parcly Taxel
- *    Jeremy Tan
+ *    Parcly Taxel (Jeremy Tan)
  *    Mihail K.
  *
- * Copyright:
- *    Copyright (C) 2015 Authors
+ * Copyright (C) 2015 Authors
  *
  * This file is part of dgeom.
  *
@@ -49,8 +47,8 @@ Point[4] createCurve(Point[] window)
 {
     return [
         window[0],
-        window[0].slide(window[1], 1.0 / 3.0),
-        window[0].slide(window[1], 2.0 / 3.0),
+        window[0].lerp(window[1], 1.0 / 3.0),
+        window[0].lerp(window[1], 2.0 / 3.0),
         window[1]
     ];
 }
@@ -60,7 +58,7 @@ Point[4] createCurve(Point[] window)
  + Precondition:
  +     At least two points must be given.
  +
- + @param points
+ + @param points Input slice of points to fit to a bezier
  + @param z
  +/
 Point[] bezierFit(Point[] points, int z)
@@ -112,8 +110,8 @@ Point[] bezierFit(Point[] points, int z)
                 ];
                 newCurve = [
                     qcurve[0],
-                    qcurve[0].slide(qcurve[1], 2.0 / 3.0),
-                    qcurve[1].slide(qcurve[2], 1.0 / 3.0),
+                    qcurve[0].lerp(qcurve[1], 2.0 / 3.0),
+                    qcurve[1].lerp(qcurve[2], 1.0 / 3.0),
                     qcurve[2]
                 ];
             } else if(window.length == 4) {
@@ -122,7 +120,7 @@ Point[] bezierFit(Point[] points, int z)
             } else {
                 auto product = window.stress;
                 Coord shortSeg = iota(0, window.length - 1)
-                        .map!(i => window[i].dist(window[i + 1])).reduce!min;
+                        .map!(i => window[i].distance(window[i + 1])).reduce!min;
 
                 // Stop condition: maximum error > 1 / 3 * minimum segment length
                 if(product[1].reduce!max > 0.33 * shortSeg) over = true;
@@ -171,8 +169,8 @@ Point[] bezierFit(Point[] points, int z)
                 real sign = (abs(v.dirc - w.dirc) >= PI) ^
                         (v.dirc > w.dirc) ? 1 : -1;
 
-                res[t - 1] = res[t] + v.spin(sign * theta);
-                res[t + 1] = res[t] + v.spin(-sign * theta);
+                res[t - 1] = res[t] + v * Rotate(sign * theta);
+                res[t + 1] = res[t] + v * Rotate(-sign * theta);
             }
         }
     }
@@ -195,16 +193,6 @@ real dirc(Point point0, Point point1 = Point())
         point1.y - point0.y,
         point1.x - point0.x
     );
-}
-
-Point slide(Point point0, Point point1, Coord t)
-{
-    return point0 + (point1 - point0) * t;
-}
-
-Point spin(Point v, real theta)
-{
-    return v * Rotate(theta);
 }
 
 Point bezierPointAtT(Point[4] cubic, Coord t)
@@ -285,7 +273,7 @@ Point[] cubicFrom4(Point[4] points)
 
 Tuple!(Point[4], double[]) stress(Point[] points)
 {
-    int middle = points.length / 2;
+    int middle = cast(int)(points.length / 2);
     Coord[] callipers = points.chords;
 
     Point[][] seeds;
@@ -344,7 +332,7 @@ Point project(Point[4] curve, Point point)
     real width = 1 / samples;
 
     foreach(i; 0 .. samples + 1) {
-        lookup ~= curve.bezierPointAtT(i / samples).dist(point);
+        lookup ~= curve.bezierPointAtT(i / samples).distance(point);
     }
 
     Coord mindist = lookup.reduce!(min);
@@ -353,8 +341,8 @@ Point project(Point[4] curve, Point point)
     // TODO : Is this really the most effective
     // way of going about this?
     while(width > 1.0e-5) {
-        Coord left  = curve.bezierPointAtT(max(t - width, 0)).dist(point);
-        Coord right = curve.bezierPointAtT(min(t + width, 1)).dist(point);
+        Coord left  = curve.bezierPointAtT(max(t - width, 0)).distance(point);
+        Coord right = curve.bezierPointAtT(min(t + width, 1)).distance(point);
 
         if(t == 0.0) left  = mindist + 1;
         if(t == 1.0) right = mindist + 1;
