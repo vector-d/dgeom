@@ -379,6 +379,38 @@ Point constrain_angle(in Point A, in Point B, uint n, in Point dir)
     return A + dir * Rotate(k * 2.0 * math.PI / cast(Coord)n) * L2(diff);
 }
 
+
+unittest
+{
+    /+ normalization +/
+    Point a = [1e-18, 0];
+    Point b = a;
+    a.normalize();
+
+    assert(a == Point(1, 0));
+    assert(b != a);
+
+    /+ scalar ops +/
+    a = Point(1, 2);
+    assert(a * 2 == Point(2, 4));
+    assert(a / 2 == Point(0.5, 1));
+
+    b = a;
+    a *= 2;
+    a /= 2;
+    assert(a == b);
+
+    /+ rounding +/
+    a = Point(-0.7, 0.7);
+    IntPoint aceil = IntPoint(0, 1);
+    IntPoint afloor = IntPoint(-1, 0);
+    IntPoint around = IntPoint(-1, 1);
+
+    assert(a.ceil() == aceil);
+    assert(a.floor() == afloor);
+    assert(a.round() == around);
+}
+
 /*
   Local Variables:
   mode:d
