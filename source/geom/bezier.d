@@ -529,7 +529,7 @@ unittest
     assert(bounds_fast(hump).contains(Interval(0,hump.valueAt(0.5))));
     assert(Interval(0,hump.valueAt(0.5)) == bounds_exact(hump));
 
-    T min(T)(T o, T t) { return o > t ? o : t; } // irritating
+    T min(T)(T o, T t) { return o < t ? o : t; } // irritating
 
     auto tight_local_bounds = Interval(min(hump.valueAt(0.3),hump.valueAt(0.6)), hump.valueAt(0.5));
     assert(bounds_local(hump, Interval(0.3, 0.6)).contains(tight_local_bounds));
