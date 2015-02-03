@@ -56,8 +56,8 @@ class BezierCurve : Curve
      * @param v The new value of the point */
     void setPoint(size_t ix, Point v)
     {
-        inner[X].setPoint(ix, v[X]);
-        inner[Y].setPoint(ix, v[Y]);
+        inner[X].setCoeff(ix, v[X]);
+        inner[Y].setCoeff(ix, v[Y]);
     }
     /** Set new control points.
      * @param ps Vector which must contain order() + 1 points.

@@ -26,7 +26,7 @@
 module geom.bezier_fitting;
 
 import std.algorithm;
-import std.exception;
+import std.exception : enforce;
 import std.math;
 import std.range;
 import std.typecons;

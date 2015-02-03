@@ -44,7 +44,7 @@ struct Bezier
     this(Coord[] a...) { c_ = a.dup; }
 
     static Bezier withOrder(size_t order)
-    { Bezier b; b.c_.length = order + 1; return b; }
+    { Bezier b; b.resize(order + 1); return b; }
 
     bool isZero(double eps = EPSILON) const
     {
@@ -74,9 +74,10 @@ struct Bezier
         /* This is inelegant, as it uses several extra stores.  I think there might be a way to
          * evaluate roughly in situ. */
 
-         // initialize return vector with zeroes, such that we only need to replace the non-zero derivs
+         // initialize return array with zeroes, such that we only need to replace the non-zero derivs
         Coord[] val_n_der;
         val_n_der.length = n_derivs + 1;
+        foreach (ref i; val_n_der) i = 0;
 
         // initialize temp storage variables
         Coord[] d_ = c_.dup; 
@@ -150,6 +151,14 @@ struct Bezier
         return ed;
     }
 
+    Bezier elevate_to_degree(size_t newDegree) const
+    {
+        Bezier ed = Bezier(this);
+        foreach (i; degree() .. newDegree)
+            ed = ed.elevate_degree();
+        return ed;
+    }
+
     Bezier reduce_degree() const
     {
         if (order() == 0) return Bezier(this);
@@ -198,7 +207,7 @@ struct Bezier
     
     // These are the only direct mutators
     ref inout(Coord) opIndex(size_t ix) inout { return c_[ix]; }
-    void setPoint(size_t ix, Coord val) { c_[ix] = val; }
+    void setCoeff(size_t ix, Coord val) { c_[ix] = val; }
 
     Coord at0() const { return c_[0]; }
     Coord at1() const { return c_[$-1]; }
@@ -395,6 +404,135 @@ Interval bounds_local(in Bezier b, Interval i)
 {
     //return bounds_local(b.toSBasis(), i);
     return ( i.isEmpty() ? Interval.empty() : bounds_fast(portion(b, i.min(), i.max())) );
+}
+
+unittest
+{
+    bool are_equal(in Bezier A, in Bezier B)
+    {
+        const maxSize = A.size() > B.size() ? A.size() : B.size();
+        Coord t = 0., dt = 1./maxSize;
+        foreach (i; 0 .. maxSize) {
+            assert(are_near(A.valueAt(t), B.valueAt(t)));
+            t += dt;
+        }
+        return true;
+    }
+
+    const zero = Bezier(0,0);
+    const unit = Bezier(0,1);
+    const hump = Bezier(0,1,0);
+    const wiggle = Bezier(0,1,-2,3);
+
+    const(Bezier[4]) fragments = [zero, unit, hump, wiggle];
+
+    /+ Basics +/
+    assert(Bezier(0,0,0,0).isZero());
+    assert(Bezier(0,1,2,3).isFinite());
+    assert(3u == Bezier(0,2,4,5).order());
+    assert(2u == hump.degree());
+    assert(3u == hump.size());
+
+    /+ valueAt +/
+    assert(0.0 == wiggle.at0());
+    assert(3.0 == wiggle.at1());
+    assert(0.0 == wiggle.valueAt(0.5));
+    assert(0.0 == wiggle(0.5));
+
+    /+ Mutation +/
+    Bezier bigun = Bezier.withOrder(30);
+    bigun.setCoeff(5,10.0);
+    foreach (i; 0 .. bigun.size()) {
+        assert(((i == 5) ? 10 : 0) == bigun[i]);
+    }
+
+    bigun[5] = -3;
+    foreach (i; 0 .. bigun.size()) {
+        assert(((i == 5) ? -3 : 0) == bigun[i]);
+    }
+
+    /+ multiderivative +/
+    Coord[] vnd = wiggle.valueAndDerivatives(0.5, 5);
+    assert(vnd == [0,0,12,72,0,0]);
+
+    /+ degree elevation +/
+    assert(are_equal(wiggle, wiggle));
+    Bezier Q = Bezier(wiggle);
+    Bezier P = Q.elevate_degree();
+    assert(P.size() == Q.size()+1);
+    assert(are_equal(Q, P));
+    Q = Bezier(wiggle);
+    P = Q.elevate_to_degree(10);
+    assert(10u == P.order());
+    assert(are_equal(Q, P));
+
+    Bezier linear_root(Coord t) { return Bezier(0-t, 1-t); }
+    Bezier array_roots(Coord[] x)
+    {
+        auto b = Bezier(1);
+        foreach (i; x) {
+            b = multiply(b, linear_root(i));
+        }
+        return b;
+    }
+
+    /+ deflation +/
+    Bezier b = array_roots([0,0.25,0.5]);
+    assert(are_near(0, b.at0()));
+    b = b.deflate();
+    assert(are_near(0, b.valueAt(0.25)));
+    b = b.subdivide(0.25)[Y];
+    assert(are_near(0, b.at0()));
+    b = b.deflate();
+    const rootposition = (0.5-0.25) / (1-0.25);
+    assert(are_near(0, b.valueAt(rootposition)));
+    b = b.subdivide(rootposition)[Y];
+    assert(are_near(0, b.at0()));
+
+    bool array_eq(in Coord[] a, in Coord[] b)
+    {
+        if (a.length != b.length) return false;
+        foreach (i; 0 .. a.length)
+            if (!are_near(a[i], b[i])) return false;
+        return true;
+    }
+
+    /+ roots +/
+    Coord[][] tests = [
+        [0.],
+        [0.,0],
+        [.5],
+        [.5,.5],
+        [.1,.1],
+        // [.1,.1,.1], // our results are close but not close enough (1e-2)
+        [.25,.75],
+        [.5,.5],
+        // [0,.2,.6,.6,1],
+        // [.1,.2,.3,.4,.5,.6],
+        [.25,.25,.25,.75,.75,.75],
+    ];
+
+    foreach (i, test; tests) {
+        b = array_roots(test);
+        assert(array_eq(test, b.roots));
+    }
+
+    /+ operators +/
+    Bezier reverse_wiggle = reverse(wiggle);
+    assert(reverse_wiggle.at0() == wiggle.at1());
+    assert(reverse_wiggle.at1() == wiggle.at0());
+    assert(are_equal(reverse(reverse_wiggle), wiggle));
+    assert(are_equal(derivative(integral(wiggle)), wiggle));
+    assert(array_eq([0.5], derivative(hump).roots));
+
+    /+ bounds +/
+    assert(bounds_fast(hump).contains(Interval(0,hump.valueAt(0.5))));
+    assert(Interval(0,hump.valueAt(0.5)) == bounds_exact(hump));
+
+    T min(T)(T o, T t) { return o > t ? o : t; } // irritating
+
+    auto tight_local_bounds = Interval(min(hump.valueAt(0.3),hump.valueAt(0.6)), hump.valueAt(0.5));
+    assert(bounds_local(hump, Interval(0.3, 0.6)).contains(tight_local_bounds));
 }
 
 /*
