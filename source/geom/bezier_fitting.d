@@ -54,14 +54,13 @@ Point[4] createCurve(Point[] window)
 }
 
 /++
+ + Fit an array of points to Bezier(s).
  +
- + Precondition:
- +     At least two points must be given.
- +
+ + @pre At least two points must be given.
  + @param points Input slice of points to fit to a bezier
- + @param z
+ + @param closed If true, smooth for a closed set of points
  +/
-Point[] bezierFit(Point[] points, int z)
+Point[] bezierFit(Point[] points, bool closed = false)
 {
     // Curves need at least 2 points
     if(points.length < 2) {
@@ -76,16 +75,17 @@ Point[] bezierFit(Point[] points, int z)
     Point[4] curCurve = window.createCurve;
 
     bool maybeOver = false;
-    while(lead++ + 1 < points.length) {
-        window = points[trail .. lead + 1];
+    while(lead + 1 < points.length) {
+        lead++;
+        window = points[trail .. lead + 1]; // Extend the window one more node
         Point v = window[$ - 3] - window[$ - 2];
         Point w = window[$ - 1] - window[$ - 2];
 
         Point[] newCurve;
         // 60 degrees or less
-        if(v.dot(w) / v.dist / w.dist >= 0.5) {
-            if(maybeOver) {
-                newCurve = points[prevTrail .. lead].stress[0];
+        if (v.dot(w) / v.L2 / w.L2 >= 0.5) {
+            if (maybeOver) {
+                newCurve = points[prevTrail .. lead].stress()[0];
                 res[$ - 3 .. $] = newCurve[1 .. $];
                 trail = lead - 1;
                 maybeOver = false;
@@ -100,8 +100,8 @@ Point[] bezierFit(Point[] points, int z)
             curCurve = window.createCurve;
         } else {
             bool over = false;
-            if(window.length == 3) {
-                Coord t = window.chords[1];
+            if (window.length == 3) {
+                Coord t = window.chords()[1];
                 Point[] qcurve = [
                     window[0],
                     (window[1] - window[0] * (1 - t) ^^ 2 -
@@ -157,11 +157,11 @@ Point[] bezierFit(Point[] points, int z)
     Point ouro = res.back;
     res.popBack;
 
-    foreach(t; iota(0, res.length, 3)) {
-        if(t != 0 || z) {
+    foreach (t; iota(0, res.length, 3)) {
+        if (t != 0 || closed) {
             Point v = res[t - 1] - res[t];
             Point w = res[t + 1] - res[t];
-            real angle = v.dot(w) / v.dist / w.dist;
+            real angle = v.dot(w) / v.L2 / w.L2;
 
             // Cos 160
             if(angle <= -0.94) {
@@ -177,14 +177,6 @@ Point[] bezierFit(Point[] points, int z)
 
     // Restore the last element
     return res ~= ouro;
-}
-
-real dist(Point point0, Point point1 = Point())
-{
-    return hypot(
-        point1.y - point0.y,
-        point1.x - point0.x
-    );
 }
 
 real dirc(Point point0, Point point1 = Point())
@@ -252,8 +244,9 @@ Point[] cubicFrom4(Point points[4], Coord p, Coord q)
     Point x = points[1] - points[0] * (1 - p) ^^ 3 - points[3] * p ^^ 3;
     Point y = points[2] - points[0] * (1 - q) ^^ 3 - points[3] * q ^^ 3;
 
-    double det = a * d - b * c;
-    l, m = (x * d - y * b) / det, (y * a - x * c) / det;
+    Coord det = a * d - b * c;
+    l = (x * d - y * b) / det;
+    m = (y * a - x * c) / det;
 
     return [points[0], l, m, points[3]];
 }
@@ -271,7 +264,7 @@ Point[] cubicFrom4(Point[4] points)
     return cubicFrom4(points, tmp[1], tmp[2]);
 }
 
-Tuple!(Point[4], double[]) stress(Point[] points)
+Tuple!(Point[4], Coord[]) stress(Point[] points)
 {
     int middle = cast(int)(points.length / 2);
     Coord[] callipers = points.chords;
@@ -290,7 +283,7 @@ Tuple!(Point[4], double[]) stress(Point[] points)
         b += seed[2];
     }
 
-    double[] errors;
+    Coord[] errors;
     Point[4] curve = [
         points[0], a / seeds.length,
         b / seeds.length, points[$ - 1]
@@ -308,13 +301,13 @@ Tuple!(Point[4], double[]) stress(Point[] points)
             curve[1] += delta1 * 2.5;
             curve[2] += delta2 * 2.5;
 
-            errors[j] = delta1.dist;
-            errors[$ - j - 1] = delta2.dist;
+            errors[j] = delta1.L2;
+            errors[$ - j - 1] = delta2.L2;
         }
     }
 
     if(points.length % 2)
-        errors[middle] = curve.project(points[middle]).dist;
+        errors[middle] = curve.project(points[middle]).L2;
     return tuple(curve, errors);
 }
 
@@ -361,7 +354,17 @@ Point project(Point[4] curve, Point point)
 
 unittest
 {
-    // TODO!
+    Point[] input = [ Point(20.,40), Point(50.,100), Point(120.,110), Point(160.,60) ];
+    Point[] expected = [ Point(20., 40), Point(11.8225095793, 120.582109841), Point(148.774429751, 145.987164121), Point(160., 60) ];
+    Point[] output = bezierFit(input);
+    foreach (i; 0 .. expected.length)
+        assert(are_near(expected[i], output[i]));
+
+    input = [ Point(20,180), Point(20,220), Point(50,240), Point(90,250) ];
+    expected = [ Point(20,180), Point(-6.39036470691,230.093020882), Point(58.9142504083,245.099863871), Point(90,250) ];
+    output = bezierFit(input);
+    foreach (i; 0 .. expected.length)
+        assert(are_near(expected[i], output[i]));
 }
 
 /*

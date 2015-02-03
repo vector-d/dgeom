@@ -22,6 +22,7 @@ SOURCES = \
 	source/geom/angle.d		\
 	source/geom/bezier.d		\
 	source/geom/bezier_curve.d	\
+	source/geom/bezier_fitting.d	\
 	source/geom/choose.d		\
 	source/geom/coord.d		\
 	source/geom/curve.d		\
