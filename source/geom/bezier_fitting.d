@@ -215,7 +215,7 @@ Coord[] chords(Point points[])
     ratios ~= 0.0;
 
     foreach(i; 0 .. lengths.length)
-        ratios ~= lengths[0 .. i + 1].sum / lengths.sum;
+        ratios ~= lengths[0 .. i + 1].reduce!"a + b" / lengths.reduce!"a + b";
     ratios ~= 1.0;
 
     return ratios;
