@@ -252,7 +252,7 @@ Path half_outline(in Path input, Coord width, Coord miter, JoinType join = JoinT
         Curve c1 = null;
         Curve c2 = null;
 
-        asm {int 3;}
+        // TODO
     }
 
     return res;

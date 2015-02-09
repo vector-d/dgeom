@@ -36,6 +36,7 @@ SOURCES = \
 	source/geom/path.d		\
 	source/geom/path_builder.d	\
 	source/geom/path_sequence.d	\
+	source/geom/path_outline.d	\
 	source/geom/piecewise.d		\
 	source/geom/point.d		\
 	source/geom/rect.d		\
