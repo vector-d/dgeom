@@ -379,6 +379,16 @@ Point constrain_angle(in Point A, in Point B, uint n, in Point dir)
     return A + dir * Rotate(k * 2.0 * math.PI / cast(Coord)n) * L2(diff);
 }
 
+Point intersection_point(in Point origin_a, in Point vector_a, in Point origin_b, in Point vector_b)
+{
+    Coord denom = cross(vector_b, vector_a);
+    if (!geom.coord.are_near(denom,0.)) {
+        Coord t = (cross(origin_a,vector_b) + cross(vector_b,origin_b)) / denom;
+        return origin_a + vector_a*t;
+    }
+    return Point(Coord.infinity, Coord.infinity);
+}
+
 
 unittest
 {

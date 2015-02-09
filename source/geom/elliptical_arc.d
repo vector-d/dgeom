@@ -126,6 +126,13 @@ class EllipticalArc : AngleInterval, Curve
         _updateCenterAndAngles(isSVGCompliant());
     }
 
+    void setRays(Coord rx, Coord ry)
+    {
+        _rays[X] = rx;
+        _rays[Y] = ry;
+        _updateCenterAndAngles(isSVGCompliant());
+    }
+
     /** Change the initial and final point in one operation.
      * This method exists because modifying any of the endpoints causes rather costly
      * recalculations of the center and extreme angles.

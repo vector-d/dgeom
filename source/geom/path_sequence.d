@@ -63,7 +63,7 @@ class PathSequence
 {
     this() {}
     this(in Path[] i) { foreach (p; i) _data ~= new Path(p); }
-    this(in PathSequence o) { foreach (p; o._data) _data ~= new Path(p); }
+    this(in PathSequence o) { this(o._data); }
 
     /// Check whether the sequence contains any paths.
     bool empty() const { return size() == 0; }

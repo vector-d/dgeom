@@ -233,6 +233,9 @@ class BezierCurveN(size_t N) : BezierCurve
 
     override BezierCurveN!(N-1) derivative()() const if (N != 0)
     { return new BezierCurveN!(N-1)(inner[X].derivative(), inner[Y].derivative()); }
+
+    BezierCurveN!(N+1) elevate_degree()() const if (N != 0)
+    { return new BezierCurveN!(N+1)(inner[X].elevate_degree(), inner[Y].elevate_degree()); }
 }
 
 /** Construct an n-order Bezier curve with compiler-determined degree */

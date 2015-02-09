@@ -117,28 +117,24 @@ void sbasis_to_bezier(ref Bezier bz, in SBasis sb, size_t sz = 0)
 
 /** Changes the basis of p to be Bernstein.
  * @param p the D2 Symmetric basis polynomial
- * @return the D2 Bernstein basis polynomial
+ * @returns the D2 Bernstein basis polynomial
  *
  * sz is always the polynomial degree, i. e. the Bezier order
  */
 void sbasis_to_bezier(ref Point[] bz, in D2!SBasis sb, size_t sz = 0)
 {
-    Bezier bzx, bzy;
+    D2!Bezier bez;
+    sbasis_to_bezier(bez, sb, sz);
+    bz = bezier_points(bez);
+}
+
+void sbasis_to_bezier(ref D2!Bezier bz, in D2!SBasis sb, size_t sz)
+{
     if (sz == 0) {
         sz = max(sb[X].size(), sb[Y].size())*2;
     }
-    sbasis_to_bezier(bzx, sb[X], sz);
-    sbasis_to_bezier(bzy, sb[Y], sz);
-    assert(bzx.size() == bzy.size());
-    size_t n = (bzx.size() >= bzy.size()) ? bzx.size() : bzy.size();
-
-    bz.length = n;
-    for (size_t i = 0; i < bzx.size(); ++i) {
-        bz[i][X] = bzx[i];
-    }
-    for (size_t i = 0; i < bzy.size(); ++i) {
-        bz[i][Y] = bzy[i];
-    }
+    sbasis_to_bezier(bz[X], sb[X], sz);
+    sbasis_to_bezier(bz[Y], sb[Y], sz);
 }
 
 /** Changes the basis of p to be sbasis.

@@ -298,7 +298,7 @@ interface Curve
     final Point unitTangentAt(Coord t, uint n = 3) const
     {
         Point[] derivs = pointAndDerivatives(t, n);
-        foreach (deriv; derivs) {
+        foreach (deriv; derivs[1 .. $]) {
             Coord length = deriv.length();
             if (!are_near(length, 0)) {
                 return deriv / length;

@@ -160,7 +160,7 @@ class PathBuilder : PathSink
     {
         if (_in_path) {
             _in_path = false;
-            _pathset ~= _path;
+            _pathset ~= new Path(_path);
             _path.clear();
         }
     }

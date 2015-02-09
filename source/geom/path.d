@@ -428,7 +428,7 @@ class Path
      * @return Portion of the path */
     Path portion(Coord f, Coord t) const
     {
-        Path ret;
+        Path ret = new Path;
         ret.close(false);
         appendPortionTo(ret, f, t);
         return ret;
@@ -446,7 +446,7 @@ class Path
     Path reversed() const
     {
         import std.range : retro;
-        Path ret;
+        Path ret = new Path;
         ret._curves = []; // clear the array
         foreach (c; retro(_curves)) {
             ret._curves ~= c.reverse();
@@ -533,7 +533,8 @@ class Path
 
     void append(in Path other, Stitching stitching = Stitching.NO_STITCHING)
     {
-        insert(size(), other._curves, stitching);
+        const(Curve[]) slice = other.closed ? other._curves : other._curves[0 .. $-1];
+        insert(size(), slice, stitching);
     }
 
     /** Append a stitching segment ending at the specified point. */
