@@ -3,6 +3,7 @@
  *
  * Authors:
  *   fred
+ *   Johan Engelen
  *   Liam P. White
  * 
  * Copyright 2003-2015 Authors
@@ -222,13 +223,14 @@ Path half_outline(in Path input, Coord width, Coord miter, JoinType join = JoinT
 
     Point tang1 = input[0].unitTangentAt(0);
     Point start = input.initialPoint + tang1 * width;
+    Path temp;
 
     res.start(start);
 
     // Do two curves at a time for efficiency, since the join function needs to know the outgoing curve as well
     const size_t k = input.size();
     for (size_t u = 0; u < k; u += 2) {
-        Path temp = new Path;
+        temp = new Path;
 
         temp.offset_curve(input[u], width, miter);
 
@@ -250,9 +252,29 @@ Path half_outline(in Path input, Coord width, Coord miter, JoinType join = JoinT
     if (input.closed) {
         // handling these is so much fun...
         Curve c1 = null;
-        Curve c2 = null;
+        Curve c2 = res[0].duplicate();
 
-        // TODO
+        if (input.back_closed.isDegenerate) {
+            // last segment is curved (we already outlined it)
+            c1 = res[res.size-1].duplicate();
+        } else {
+            // last segment is straight
+            c1 = offset_line(new LineSegment(input.back_closed.initialPoint, input.initialPoint), width);
+        }
+
+        temp = new Path;
+        temp.append(c1);
+        Path temp2 = new Path;
+        temp2.append(c2);
+        outline_helper(temp, temp2, width, miter, join);
+        temp.erase_last(); // we already outlined c2
+
+        if (input.back_closed.isDegenerate) {
+            temp.erase(0); // we already outlined c1
+        }
+        res.append(temp, Stitching.STITCH_DISCONTINUOUS);
+        res.close();
+        //
     }
 
     return res;
@@ -407,6 +429,21 @@ unittest
     p.appendNew!LineSegment(Point(130,54));
     p.appendNew!CubicBezier(Point(150,55), Point(160,71), Point(150,92));
     Path out_p = outline(p, 1, 5, JoinType.JOIN_BEVEL, ButtType.BUTT_FLAT)[0];
+    writeln("--------");
+    /*foreach (i; 0 .. out_p.size) {
+        const(BezierCurve) b = cast(const(BezierCurve))out_p[i];
+        Point[] pts = b.points;
+        foreach (pt; pts)
+            writeln(pt);
+        writeln("--");
+    }*/
+    p = new Path;
+    // M 100,100 70,200 200,200 Z
+    p.start(Point(100,100));
+    p.appendNew!LineSegment(Point(70,200));
+    p.appendNew!LineSegment(Point(200,200));
+    p.close();
+    out_p = outline(p, 1, 5, JoinType.JOIN_BEVEL, ButtType.BUTT_FLAT)[0];
     writeln("--------");
     foreach (i; 0 .. out_p.size) {
         const(BezierCurve) b = cast(const(BezierCurve))out_p[i];
