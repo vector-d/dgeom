@@ -161,7 +161,7 @@ void miter_join(ref Path res, in Curve outgoing, Coord miter, Coord width)
         Coord len = p.distance(point_on_path);
         if (len <= miter) {
             // miter OK, check to see if we can do a relocation
-            if (auto line = cast(const(LineSegment))incoming) {
+            if (auto line = cast(const(LineSegment))res.back_open) {
                 Curve copy = line.duplicate;
                 copy.setFinal(p);
                 res.erase_last();
@@ -198,7 +198,7 @@ void outline_helper(ref Path res, in Path to_add, Coord width, Coord miter, Join
             default:
                 jf = &miter_join;
         }
-        jf(res, to_add[0], width, miter);
+        jf(res, to_add[0], miter, width);
     } else {
         join_inside(res, to_add[0]);
     }
@@ -250,31 +250,19 @@ Path half_outline(in Path input, Coord width, Coord miter, JoinType join = JoinT
     }
 
     if (input.closed) {
-        // handling these is so much fun...
-        Curve c1 = null;
+        Curve c1 = res[res.size-1].duplicate();
         Curve c2 = res[0].duplicate();
-
-        if (input.back_closed.isDegenerate) {
-            // last segment is curved (we already outlined it)
-            c1 = res[res.size-1].duplicate();
-        } else {
-            // last segment is straight
-            c1 = offset_line(new LineSegment(input.back_closed.initialPoint, input.initialPoint), width);
-        }
-
         temp = new Path;
         temp.append(c1);
         Path temp2 = new Path;
         temp2.append(c2);
         outline_helper(temp, temp2, width, miter, join);
         temp.erase_last(); // we already outlined c2
+        temp.erase(0); // we already outlined c1
 
-        if (input.back_closed.isDegenerate) {
-            temp.erase(0); // we already outlined c1
-        }
-        res.append(temp, Stitching.STITCH_DISCONTINUOUS);
-        res.close();
         //
+        res.append(temp);
+        res.close();
     }
 
     return res;
@@ -423,14 +411,15 @@ void offset_quadratic(ref Path p, in QuadraticBezier bez, Coord width, Coord tol
 unittest
 {
 
-    Path p = new Path;
-    p.start(Point(10,30));
+    Path p; // = new Path;
+    Path out_p;
+    /*p.start(Point(10,30));
     p.appendNew!LineSegment(Point(60,90));
     p.appendNew!LineSegment(Point(130,54));
     p.appendNew!CubicBezier(Point(150,55), Point(160,71), Point(150,92));
-    Path out_p = outline(p, 1, 5, JoinType.JOIN_BEVEL, ButtType.BUTT_FLAT)[0];
-    writeln("--------");
-    /*foreach (i; 0 .. out_p.size) {
+    Path out_p = outline(p, 1, 5, JoinType.JOIN_BEVEL, ButtType.BUTT_FLAT)[0];*/
+    /*writeln("--------");
+    foreach (i; 0 .. out_p.size) {
         const(BezierCurve) b = cast(const(BezierCurve))out_p[i];
         Point[] pts = b.points;
         foreach (pt; pts)
@@ -442,8 +431,21 @@ unittest
     p.start(Point(100,100));
     p.appendNew!LineSegment(Point(70,200));
     p.appendNew!LineSegment(Point(200,200));
-    p.close();
-    out_p = outline(p, 1, 5, JoinType.JOIN_BEVEL, ButtType.BUTT_FLAT)[0];
+    //p.close();
+    //out_p = outline(p, 2, 5, JoinType.JOIN_MITER, ButtType.BUTT_FLAT)[0];
+    /*writeln("--------");
+    foreach (i; 0 .. out_p.size) {
+        const(BezierCurve) b = cast(const(BezierCurve))out_p[i];
+        Point[] pts = b.points;
+        foreach (pt; pts)
+            writeln(pt);
+        writeln("--");
+    }*/
+    // M 100,100 70,200 200,200 Q 120,160 100,100
+    //p.close(false);
+    p.appendNew!QuadraticBezier(Point(120,160), Point(100,100));
+    p.close(true);
+    out_p = outline(p, 2, 5e4, JoinType.JOIN_MITER, ButtType.BUTT_FLAT)[0];
     writeln("--------");
     foreach (i; 0 .. out_p.size) {
         const(BezierCurve) b = cast(const(BezierCurve))out_p[i];

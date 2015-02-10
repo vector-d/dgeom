@@ -648,8 +648,11 @@ private:
     void do_update()
     {
         if (_curves[0] != _closing_seg) {
-            _closing_seg.setPoint(0, back().finalPoint());
-            _closing_seg.setPoint(1, front().initialPoint());
+            _closing_seg.setPoint(X, back().finalPoint());
+            _closing_seg.setPoint(Y, front().initialPoint());
+        } else {
+            // degenerate path
+            _closing_seg.setPoint(Y, _closing_seg.initialPoint);
         }
 
         checkContinuity();
