@@ -161,12 +161,12 @@ Point[] bezierFit(Point[] points, bool closed = false)
         if (t != 0 || closed) {
             Point v = res[t - 1] - res[t];
             Point w = res[t + 1] - res[t];
-            real angle = v.dot(w) / v.L2 / w.L2;
+            double angle = v.dot(w) / v.L2 / w.L2;
 
             // Cos 160
             if(angle <= -0.94) {
-                real theta = (PI - acos(angle)) / 2;
-                real sign = (abs(v.dirc - w.dirc) >= PI) ^
+                double theta = (PI - acos(angle)) / 2;
+                double sign = (abs(v.dirc - w.dirc) >= PI) ^
                         (v.dirc > w.dirc) ? 1 : -1;
 
                 res[t - 1] = res[t] + v * Rotate(sign * theta);
@@ -179,7 +179,7 @@ Point[] bezierFit(Point[] points, bool closed = false)
     return res ~= ouro;
 }
 
-real dirc(Point point0, Point point1 = Point())
+auto dirc(Point point0, Point point1 = Point())
 {
     return atan2(
         point1.y - point0.y,
@@ -321,8 +321,8 @@ Tuple!(Point[4], Coord[]) stress(Point[] points)
 Point project(Point[4] curve, Point point)
 {
     Coord[] lookup;
-    real samples = 200;
-    real width = 1 / samples;
+    double samples = 200.;
+    double width = 1. / samples;
 
     foreach(i; 0 .. samples + 1) {
         lookup ~= curve.bezierPointAtT(i / samples).distance(point);
@@ -337,8 +337,8 @@ Point project(Point[4] curve, Point point)
         Coord left  = curve.bezierPointAtT(max(t - width, 0)).distance(point);
         Coord right = curve.bezierPointAtT(min(t + width, 1)).distance(point);
 
-        if(t == 0.0) left  = mindist + 1;
-        if(t == 1.0) right = mindist + 1;
+        if(t == 0.) left  = mindist + 1;
+        if(t == 1.) right = mindist + 1;
 
         if(left < mindist || right < mindist) {
             mindist = min(left, right);
