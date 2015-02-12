@@ -161,12 +161,12 @@ Point[] bezierFit(Point[] points, bool closed = false)
         if (t != 0 || closed) {
             Point v = res[t - 1] - res[t];
             Point w = res[t + 1] - res[t];
-            double angle = v.dot(w) / v.L2 / w.L2;
+            Coord angle = v.dot(w) / v.L2 / w.L2;
 
             // Cos 160
             if(angle <= -0.94) {
-                double theta = (PI - acos(angle)) / 2;
-                double sign = (abs(v.dirc - w.dirc) >= PI) ^
+                Coord theta = (PI - acos(angle)) / 2;
+                Coord sign = (abs(v.dirc - w.dirc) >= PI) ^
                         (v.dirc > w.dirc) ? 1 : -1;
 
                 res[t - 1] = res[t] + v * Rotate(sign * theta);
@@ -321,8 +321,8 @@ Tuple!(Point[4], Coord[]) stress(Point[] points)
 Point project(Point[4] curve, Point point)
 {
     Coord[] lookup;
-    double samples = 200.;
-    double width = 1. / samples;
+    Coord samples = 200.;
+    Coord width = 1. / samples;
 
     foreach(i; 0 .. samples + 1) {
         lookup ~= curve.bezierPointAtT(i / samples).distance(point);
