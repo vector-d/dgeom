@@ -263,6 +263,41 @@ Coord[] curve_mono_splits(in Curve d)
     return rs;
 }
 
+unittest
+{
+    import geom.bezier_curve;
+
+    auto l1 = bezierFromPoints(Point(0,0), Point(200,200));
+    auto l2 = bezierFromPoints(Point(200,0), Point(0,200));
+
+    // the intersection point is 100,100 (ta and tb 0.5 on both curves)
+    Crossings cr = l1.crossings(l2);
+    assert(are_near(cr[0].ta, 0.5));
+    assert(are_near(cr[0].tb, 0.5));
+
+    // M 0,0 C 100,0 200,100 200,200
+    auto c1 = bezierFromPoints(Point(0,0), Point(100,0), Point(200,100), Point(200,200));
+
+    // the intersection point is 137.5,62.5 (ta: 0.5, tb: 0.3125)
+    cr = c1.crossings(l2);
+    assert(are_near(cr[0].ta, 0.5));
+    assert(are_near(cr[0].tb, 0.3125));
+
+    // M 200,0 C 100,0 0,100 0,200
+    auto c2 = bezierFromPoints(Point(200,0), Point(100,0), Point(0,100), Point(0,200));
+
+    // the intersection point is about 100,31.9955
+    cr = c1.crossings(c2);
+    assert(are_near(cr[0].ta, 0.3472963553338607));
+    assert(are_near(cr[0].tb, 0.3472963553338607));
+
+    // M 0,0 C 300,300 0,200 200,0
+    auto c3 = bezierFromPoints(Point(0,0), Point(300,300), Point(0,200), Point(200,0));
+    cr = curve_self_crossings(c3);
+    assert(are_near(cr[1].ta, 0.2307692307692307)); // why [1] instead of [0]?
+    assert(are_near(cr[1].tb, 0.6923076923076923));
+}
+
 /*
   Local Variables:
   mode:d
