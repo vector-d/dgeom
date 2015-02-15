@@ -62,6 +62,7 @@ struct PathSequencePosition
 class PathSequence
 {
     this() {}
+    this(in Path i) { _data ~= new Path(i); }
     this(in Path[] i) { foreach (p; i) _data ~= new Path(p); }
     this(in PathSequence o) { this(o._data); }
 
@@ -189,6 +190,8 @@ class PathSequence
         return ret;
     }
 
+    const(Path[]) array() const { return _data; }
+
 private:
 
     PathSequencePosition _getPosition(Coord t) const
@@ -212,7 +215,8 @@ private:
         }
         return ret;
     }
-    Path[] _data;
+
+    package Path[] _data;
 }
 
 unittest

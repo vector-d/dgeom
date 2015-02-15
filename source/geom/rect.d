@@ -150,6 +150,8 @@ struct GenericRect(C)
     C area() const { return f[X].extent() * f[Y].extent(); }
     /** Check whether the rectangle has zero area. */
     bool hasZeroArea() const { return (area() == 0); }
+    /** Check whether the rectangle is effectively empty */
+    bool isEmpty() const { return f[X].isEmpty() || f[Y].isEmpty(); }
 
     /** Get the larger extent (width or height) of the rectangle. */
     C maxExtent() const { return cast(C)math.fmax(f[X].extent(), f[Y].extent()); }
