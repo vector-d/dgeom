@@ -6,7 +6,7 @@ LDFLAGS ?=
 OBJEXT ?= 
 
 # Target
-OBJ_NAME = lib2geom
+OBJ_NAME = dgeom
 
 .PHONY: $(OBJ_NAME) clean
 
