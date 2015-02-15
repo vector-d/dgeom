@@ -176,7 +176,8 @@ Point[] bezierFit(Point[] points, bool closed = false)
     }
 
     // Restore the last element
-    return res ~= ouro;
+    res ~= ouro;
+    return res;
 }
 
 auto dirc(Point point0, Point point1 = Point())
