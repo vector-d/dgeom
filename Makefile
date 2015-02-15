@@ -25,6 +25,7 @@ SOURCES = \
 	source/geom/bezier_fitting.d	\
 	source/geom/choose.d		\
 	source/geom/coord.d		\
+	source/geom/crossing.d		\
 	source/geom/curve.d		\
 	source/geom/d2.d		\
 	source/geom/ellipse.d		\
@@ -35,6 +36,7 @@ SOURCES = \
 	source/geom/nearest_time.d	\
 	source/geom/path.d		\
 	source/geom/path_builder.d	\
+	source/geom/path_intersection.d	\
 	source/geom/path_sequence.d	\
 	source/geom/path_outline.d	\
 	source/geom/piecewise.d		\
