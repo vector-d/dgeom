@@ -448,11 +448,12 @@ class Path
         import std.range : retro;
         Path ret = new Path;
         ret._curves = []; // clear the array
-        foreach (c; retro(_curves)) {
+        foreach (c; retro(_curves[0 .. $-1])) {
             ret._curves ~= c.reverse();
         }
         ret._closing_seg = ret._closing_seg.reverse();
         ret._curves ~= ret._closing_seg;
+        ret._closed = _closed;
         return ret;
     }
 

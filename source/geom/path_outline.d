@@ -262,9 +262,9 @@ Path half_outline(in Path input, Coord width, Coord miter, JoinType join = JoinT
 
         //
         res.append(temp);
-        res.close();
     }
 
+    res.close();
     return res;
 }
 
@@ -410,29 +410,17 @@ void offset_quadratic(ref Path p, in QuadraticBezier bez, Coord width, Coord tol
 
 unittest
 {
-
-    Path p; // = new Path;
+    Path p;
     Path out_p;
-    /*p.start(Point(10,30));
-    p.appendNew!LineSegment(Point(60,90));
-    p.appendNew!LineSegment(Point(130,54));
-    p.appendNew!CubicBezier(Point(150,55), Point(160,71), Point(150,92));
-    Path out_p = outline(p, 1, 5, JoinType.JOIN_BEVEL, ButtType.BUTT_FLAT)[0];*/
-    /*writeln("--------");
-    foreach (i; 0 .. out_p.size) {
-        const(BezierCurve) b = cast(const(BezierCurve))out_p[i];
-        Point[] pts = b.points;
-        foreach (pt; pts)
-            writeln(pt);
-        writeln("--");
-    }*/
-    p = new Path;
+    /+ Some ideas for paths to test: +/
+    // M 10,30 60,90 130,54 C 150,55 160,71 150,92
     // M 100,100 70,200 200,200 Z
-    p.start(Point(100,100));
-    p.appendNew!LineSegment(Point(70,200));
-    p.appendNew!LineSegment(Point(200,200));
-    //p.close();
-    //out_p = outline(p, 2, 5, JoinType.JOIN_MITER, ButtType.BUTT_FLAT)[0];
+    // M 100,100 70,200 200,200 Q 120,160 100,100
+    // M 0,0 C -100,100 100,100 0,0 Z
+    // M -300,-200 C 100,200 -450,50 50,0
+    p = new Path(Point(-300,-200));
+    p.appendNew!CubicBezier(Point(100,200), Point(-450,50), Point(50,0));
+    out_p = outline(p, 2, 5e4, JoinType.JOIN_MITER, ButtType.BUTT_FLAT)[0];
     /*writeln("--------");
     foreach (i; 0 .. out_p.size) {
         const(BezierCurve) b = cast(const(BezierCurve))out_p[i];
@@ -441,19 +429,6 @@ unittest
             writeln(pt);
         writeln("--");
     }*/
-    // M 100,100 70,200 200,200 Q 120,160 100,100
-    //p.close(false);
-    p.appendNew!QuadraticBezier(Point(120,160), Point(100,100));
-    p.close(true);
-    out_p = outline(p, 2, 5e4, JoinType.JOIN_MITER, ButtType.BUTT_FLAT)[0];
-    writeln("--------");
-    foreach (i; 0 .. out_p.size) {
-        const(BezierCurve) b = cast(const(BezierCurve))out_p[i];
-        Point[] pts = b.points;
-        foreach (pt; pts)
-            writeln(pt);
-        writeln("--");
-    }
 }
 
 /*

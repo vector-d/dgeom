@@ -203,6 +203,12 @@ struct Point
         }
     }
 
+    string toString() const
+    {
+        import std.conv : text;
+        return text(_pt[X])~","~text(_pt[Y]);
+    }
+
     private Coord[2] _pt = [0, 0];
 }
 
