@@ -296,8 +296,8 @@ void delete_duplicates(ref Crossings crs)
 Rect[] bounds(C)(in C a)
 {
     Rect[] rs;
-    foreach (i; a) {
-        Rect bb = i.boundsFast();
+    foreach (i; 0 .. a.length) {
+        Rect bb = a[i].boundsFast();
         if (!bb.isEmpty()) {
             rs ~= bb;
         }

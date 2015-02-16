@@ -71,6 +71,7 @@ class PathSequence
 
     /// Get the number of paths in the sequence.
     size_t size() const { return _data.length; }
+    alias length = size;
 
     /// Get the total number of curves in the sequence.
     size_t curveCount() const

@@ -278,6 +278,33 @@ Coord[] curve_mono_splits(in Curve d)
     return rs;
 }
 
+private void flip_crossings(ref Crossings crs)
+{ foreach (ref i; crs) i = new Crossing(i.tb, i.ta, i.b, i.a, !i.dir); }
+
+CrossingSet crossings_among(in PathSequence p)
+{
+    CrossingSet results = new CrossingSet(p.size());
+    if (p.empty()) return results;
+    
+    SimpleCrosser cc;
+    
+    size_t[][] cull = sweep_bounds(bounds(p));
+    foreach (i; 0 .. cull.length) {
+        Crossings res = self_crossings(p[i]);
+        foreach (ref k; res) { k.a = k.b = i; }
+        merge_crossings(results[i], res, i);
+        flip_crossings(res);
+        merge_crossings(results[i], res, i);
+        foreach (jx, j; cull[i]) {
+            Crossings res1 = cc.crossings(p[i], p[j]);
+            foreach (ref k; res1) { k.a = k.b = i; }
+            merge_crossings(results[i], res1, i);
+            merge_crossings(results[j], res1, j);
+        }
+    }
+    return results;
+}
+
 unittest
 {
     import geom.bezier_curve;
