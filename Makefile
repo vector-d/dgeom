@@ -42,7 +42,6 @@ SOURCES = \
 	source/geom/piecewise.d		\
 	source/geom/point.d		\
 	source/geom/rect.d		\
-	source/geom/region.d		\
 	source/geom/sbasis.d		\
 	source/geom/sbasis_curve.d	\
 	source/geom/sbasis_roots.d	\
