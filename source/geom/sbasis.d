@@ -234,6 +234,17 @@ struct SBasis
         else static assert(false, "SBasis operator "~op~" not implemented");
     }
 
+    SBasis opUnary(string op)() const if (op == "-")
+    {
+        if (isZero()) return SBasis.init;
+        SBasis result = SBasis(size());
+            
+        foreach (i; 0 .. size()) {
+            result[i] = -this[i];
+        }
+        return result;
+    }
+
     void opOpAssign(string op, T)(T rhs)
     { mixin("this = this "~op~" rhs;"); }
 
@@ -540,6 +551,31 @@ Interval bounds_local(in SBasis sb, in Interval i, int order = 0)
     Interval res = Interval(lo,hi);
     if (order > 0) res*= math.pow(.25,order);
     return res;
+}
+
+/** Compute the integral of c (Exact)
+ * @param c sbasis functions
+ * @return sbasis integral(c)
+ */
+SBasis integral(in SBasis c)
+{
+    SBasis a;
+    a.resize(c.size() + 1);
+    a[0] = Linear(0,0);
+
+    foreach (k; 1 .. c.size() + 1) {
+        Coord ahat = -c[k-1].tri()/(2*k);
+        a[k][0] = a[k][1] = ahat;
+    }
+
+    Coord aTri = 0;
+    for (long k = c.size()-1; k >= 0; k--) {
+        aTri = (c[k].hat() + (k+1)*aTri/2)/(2*k+1);
+        a[k][0] -= aTri/2;
+        a[k][1] += aTri/2;
+    }
+    a.normalize();
+    return a;
 }
 
 SBasis derivative(in SBasis x)

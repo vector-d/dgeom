@@ -44,11 +44,11 @@ struct D2(T)
     // for use by Piecewise
     alias output_type = Point;
 
-    this(T a, T b)
-    { f = [a, b]; }
+    this(in T a, in T b)
+    { f = [T(a), T(b)]; }
 
     this(const(T[2]) arr)
-    { f = [T(arr[0]), T(arr[1])]; }
+    { this(arr[X], arr[Y]); }
     
     this(in D2!T o)
     { this(o.f); }
@@ -102,6 +102,31 @@ struct D2(T)
         return D2!Bezier(f[X].portion(d, t), f[Y].portion(d, t));
     }
 
+    D2!T derivative()() const if (__traits(compiles, f[X].derivative) ||
+                                  __traits(compiles, derivative(f[X])))
+    { return D2!T(f[X].derivative(), f[Y].derivative()); }
+
+    D2!T integral()() const if (__traits(compiles, f[X].integral) ||
+                                __traits(compiles, integral(f[X])))
+    { return D2!T(f[X].integral(), f[Y].integral()); }
+
+    // equivalent to cw/ccw, for use in situations where rotation direction doesn't matter.
+    //pragma(msg, T.stringof, " has a working opUnary!'-': ", __traits(compiles, f[Y].opUnary!"-"()));
+    D2!T rot90()() const if (__traits(compiles, -f[Y]))
+    { return D2!T(-f[Y], f[X]); }
+
+    /** Calculates the 'dot product' or 'inner product' of \c a and \c b
+     * @return \f$a \bullet b = a_X b_X + a_Y b_Y\f$.
+     * @relates D2 */
+    T dot(U)(in U b) const if (__traits(compiles, f[0]*b[0]+f[1]*b[1]))
+    { return f[0] * b[0] + f[1] * b[1]; }
+
+    /** Calculates the 'cross product' or 'outer product' of \c a and \c b
+     * @return \f$a \times b = a_Y b_X - a_X b_Y\f$.
+     * @relates D2 */
+    T cross(U)(in U b) const if (__traits(compiles, f[1]*b[0]-f[0]*b[1]))
+    { return f[1] * b[0] - f[0] * b[1]; }
+
     private T[2] f;
 }
 
@@ -149,8 +174,8 @@ D2!T reverse(T)(in D2!T a)
 D2!T portion(T)(in D2!T a, Interval i)
 { return D2!T(a[X].portion(i), a[Y].portion(i)); }+/
 
-D2!T derivative(T)(in D2!T a)
-{ return D2!T(a[X].derivative(), a[Y].derivative()); }
+/+D2!T derivative(T)(in D2!T a)
+{ return D2!T(a[X].derivative(), a[Y].derivative()); }+/
 
 bool are_near(T)(in D2!T a, in D2!T b, Coord tol = EPSILON)
 { return are_near(a[0], b[0], tol) && are_near(a[1], b[1], tol); }
@@ -160,26 +185,8 @@ import geom.sbasis;
 D2!SBasis toSBasis(T)(in D2!T f)
 { return D2!SBasis(f[X].toSBasis(), f[Y].toSBasis()); }
 
-/** Calculates the 'dot product' or 'inner product' of \c a and \c b
- * @return \f$a \bullet b = a_X b_X + a_Y b_Y\f$.
- * @relates D2 */
-T dot(T, U)(in D2!T a, in U b)
-{
-    T r;
-    for (uint i = 0; i < 2; i++)
-        r += a[i] * b[i];
-    return r;
-}
-
-/** Calculates the 'cross product' or 'outer product' of \c a and \c b
- * @return \f$a \times b = a_Y b_X - a_X b_Y\f$.
- * @relates D2 */
-T cross(T, U)(in D2!T a, in U b)
-{ return a[1] * b[0] - a[0] * b[1]; }
-
-// equivalent to cw/ccw, for use in situations where rotation direction doesn't matter.
-D2!T rot90(T)(in D2!T a)
-{ return D2!T(-a[Y], a[X]); }
+D2!SBasis multiply(in SBasis a, in D2!SBasis b)
+{ return D2!SBasis(geom.sbasis.multiply(a, b[X]), geom.sbasis.multiply(a, b[Y])); }
 
 D2!T compose(T)(in D2!T a, in T b)
 {

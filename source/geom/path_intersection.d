@@ -55,6 +55,21 @@ Crossings curve_sweep(T)(in Path a, in Path b)
     return ret;
 }
 
+bool path_direction(in Path p)
+{
+    import geom.d2;
+    import geom.piecewise;
+    import geom.sbasis;
+
+    if (p.empty()) return false;
+
+    Piecewise!(D2!SBasis) pw = p.toPwSb();
+    Coord area;
+    Point centre;
+    centroid(pw, centre, area);
+    return area > 0;
+}
+
 class SimpleCrosser : Crosser!Path
 {
     Crossings crossings(in Curve a, in Curve b) const

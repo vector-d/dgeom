@@ -61,7 +61,7 @@ Coord nearest_time(in Point p, in D2!SBasis c, in D2!SBasis dc, Coord from = 0, 
 
     if (c.isConstant()) return from;
 
-    SBasis dd = dot(c - p, dc);
+    SBasis dd = (c - p).dot(dc);
     Coord[] zeros = roots(dd);
 
     Coord closest = from;
@@ -104,7 +104,7 @@ Coord[] all_nearest_times(in Point p, in D2!SBasis c, in D2!SBasis dc, Coord fro
         return result;
     }
 
-    SBasis dd = dot(c - p, dc);
+    SBasis dd = (c - p).dot(dc);
 
     Coord[] zeros = roots(dd);
     Coord[] candidates;

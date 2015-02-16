@@ -24,6 +24,7 @@ module geom.piecewise;
 public import geom.coord;
 import geom.d2;
 import geom.interval;
+import geom.point;
 import geom.sbasis;
 import std.math;
 
@@ -386,6 +387,18 @@ struct Piecewise(T)
         assert(ret.invariants());
         return ret;
     }
+
+    Piecewise!T opUnary(string op)() const if (op == "-" && __traits(compiles, -this[0]))
+    {
+        import object : reserve;
+
+        Piecewise!T ret;
+        ret.segs.reserve(size());
+        ret.cuts = cuts.dup;
+        foreach (i; 0 .. size())
+            ret.push_seg(-this[i]);
+        return ret;
+    }
 }
 
 
@@ -401,6 +414,47 @@ Piecewise!T remove_short_cuts(T)(Piecewise!T f, Coord tol)
         }
     }
     return ret;
+}
+
+/**
+ * Centroid using SBasis integration.
+ * @param p the Element.
+ * @param centroid on return contains the centroid of the shape
+ * @param area on return contains the signed area of the shape.
+ *
+ * This approach uses green's theorem to compute the area and centroid using integrals.
+ * For curved shapes this is much faster than converting to polyline.
+ * Note that without an uncross operation the output is not the absolute area.
+ *
+ * Returned values: 
+ *  0 for normal execution;
+ *  2 if area is zero, meaning centroid is meaningless.
+ */
+uint centroid(in Piecewise!(D2!SBasis) p, ref Point centroid, ref Coord area)
+{
+    Point centroid_tmp = Point(0,0);
+    Coord atmp = 0;
+    foreach (i; 0 .. p.size()) {
+        SBasis curl = p[i].dot(p[i].derivative.rot90());
+        SBasis A = integral(curl);
+        D2!SBasis C = multiply(curl, p[i]).integral();
+        atmp += A.at1() - A.at0();
+        centroid_tmp += C.at1()- C.at0(); // first moment.
+    }
+
+    // join ends
+    centroid_tmp *= 2;
+    Point fin = p[p.size()-1].at1(), initial = p[0].at0();
+    const(Coord) ai = cross(fin, initial);
+    atmp += ai;
+    centroid_tmp += (fin + initial)*ai; // first moment.
+    
+    area = atmp / 2;
+    if (atmp != 0) {
+        centroid = centroid_tmp / (3 * atmp);
+        return 0;
+    }
+    return 2;
 }
 
 alias PWD2 = Piecewise!(D2!SBasis);
