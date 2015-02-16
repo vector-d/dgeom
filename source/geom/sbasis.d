@@ -559,6 +559,8 @@ Interval bounds_local(in SBasis sb, in Interval i, int order = 0)
  */
 SBasis integral(in SBasis c)
 {
+    import std.range : iota, retro;
+
     SBasis a;
     a.resize(c.size() + 1);
     a[0] = Linear(0,0);
@@ -569,10 +571,10 @@ SBasis integral(in SBasis c)
     }
 
     Coord aTri = 0;
-    for (long k = c.size()-1; k >= 0; k--) {
+    foreach (k; iota(0, c.size).retro) {
         aTri = (c[k].hat() + (k+1)*aTri/2)/(2*k+1);
-        a[k][0] -= aTri/2;
-        a[k][1] += aTri/2;
+        a[k][0] -= aTri / 2.;
+        a[k][1] += aTri / 2.;
     }
     a.normalize();
     return a;
