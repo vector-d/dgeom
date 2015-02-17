@@ -4,7 +4,8 @@
 	"copyright": "Copyright (C) 2006-2015 authors",
 	"license": "GPL Version 3",
 	"authors": [
-		"Liam P. White"
+		"Liam P. White",
+		"Mihail-K"
 	],
 	"dependencies": {
 	},
