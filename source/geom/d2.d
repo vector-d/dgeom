@@ -28,9 +28,10 @@ module geom.d2;
 public import geom.coord;
 
 import geom.affine;
-import geom.bezier; // FIXME
 import geom.interval;
 import geom.point; // TODO: convert Point to D2!Coord
+import geom.sbasis;
+import geom.rect;
 
 /**
  * The D2 class takes two instances of a scalar data type and treats them
@@ -53,7 +54,6 @@ struct D2(T)
     this(in D2!T o)
     { this(o.f); }
 
-    // why does this exist?
     this(in Point a)
     {  f = [T(a[X]), T(a[Y])]; }
 
@@ -88,30 +88,27 @@ struct D2(T)
     void opOpAssign(string op, T)(T b)
     { mixin("this = this "~op~" b; "); }
 
-    Point opCall(Coord t) const
-    {
-        Point p = [ f[X](t), f[Y](t) ];
-        return p;
-    }
+    Point opCall()(Coord t) const if (is(typeof({
+        Coord x = f[X](.5); // implicit conversion or type is Coord
+    })))
+    { return Point(f[X](t), f[Y](t)); }
 
-    D2!T portion(Coord d, Coord t) const
+    D2!T portion()(Coord d, Coord t) const if (__traits(compiles, f[X].portion(d, t)))
     { return D2!T(f[X].portion(d, t), f[Y].portion(d, t)); }
 
-    D2!T portion()(Coord d, Coord t) const if (is(T == Bezier))
-    {
-        return D2!Bezier(f[X].portion(d, t), f[Y].portion(d, t));
-    }
+    D2!T portion()(Interval i) const if (__traits(compiles, f[X].portion(i)))
+    { return D2!T(f[X].portion(i), f[Y].portion(i)); } 
 
-    D2!T derivative()() const if (__traits(compiles, f[X].derivative) ||
-                                  __traits(compiles, derivative(f[X])))
+    D2!T derivative()() const if (__traits(compiles, f[X].derivative))
     { return D2!T(f[X].derivative(), f[Y].derivative()); }
 
-    D2!T integral()() const if (__traits(compiles, f[X].integral) ||
-                                __traits(compiles, integral(f[X])))
+    D2!T integral()() const if (__traits(compiles, f[X].integral))
     { return D2!T(f[X].integral(), f[Y].integral()); }
 
+    D2!T reverse()() const if (__traits(compiles, f[X].reverse))
+    { return D2!T(f[X].reverse, f[Y].reverse); }
+
     // equivalent to cw/ccw, for use in situations where rotation direction doesn't matter.
-    //pragma(msg, T.stringof, " has a working opUnary!'-': ", __traits(compiles, f[Y].opUnary!"-"()));
     D2!T rot90()() const if (__traits(compiles, -f[Y]))
     { return D2!T(-f[Y], f[X]); }
 
@@ -127,103 +124,75 @@ struct D2(T)
     T cross(U)(in U b) const if (__traits(compiles, f[1]*b[0]-f[0]*b[1]))
     { return f[1] * b[0] - f[0] * b[1]; }
 
+    bool isZero()(Coord eps = EPSILON) const if (__traits(compiles, f[X].isZero(eps)))
+    { return f[X].isZero(eps) && f[Y].isZero(eps); }
+
+    bool isConstant()(Coord eps = EPSILON) const if (__traits(compiles, f[X].isConstant(eps)))
+    { return f[X].isConstant(eps) && f[Y].isConstant(eps); }
+
+    bool isFinite()() const if (__traits(compiles, f[X].isFinite()))
+    { return f[X].isFinite() && f[Y].isFinite(); }
+
+    D2!T compose()(in T b) const if (__traits(compiles, f[X].compose(b)))
+    { return D2!T(f[X].compose(b), f[Y].compose(b)); }
+
+    D2!T compose_each()(in D2!T b) const if (__traits(compiles, f[X].compose(b[X])))
+    { return D2!T(f[X].compose(b[X]), f[Y].compose(b[Y])); }
+
+    D2!T compose_each()(in T b) const if (__traits(compiles, b.compose(f[X])))
+    { return D2!T(b.compose(f[X]), b.compose(f[Y])); }
+
+    bool are_near()(in D2!T b, Coord tol = EPSILON) const if (__traits(compiles, f[X].are_near(b, tol)))
+    { return f[X].are_near(b[X], tol) && a[Y].are_near(b[Y], tol); }
+
+    Point[] valueAndDerivatives()(Coord t, size_t n) const if (__traits(compiles, f[X].valueAndDerivatives(t, n)))
+    {
+        Coord[] x = f[X].valueAndDerivatives(t, n);
+        Coord[] y = f[Y].valueAndDerivatives(t, n); // always returns a slice of size n+1
+        Point[] res = new Point[n];
+        foreach(i, ref r; res) {
+            r = Point(x[i], y[i]);
+        }
+        return res;
+    }
+
+    /+ Concepts which require Point +/
+
+    static if (is(typeof({
+        Coord x = f[X].at1(); // implicit conversion or type is Coord
+        Coord y = f[Y](.5); // opCall(Coord)
+    }))) {
+        Point at0() const
+        { return Point(f[X].at0(), f[Y].at0()); }
+
+        Point at1() const 
+        { return Point(f[X].at1(), f[Y].at1()); }
+
+        Point valueAt()(Coord t) const
+        { return Point(f[X](t), f[Y](t)); }
+    }
+
+    /+ Concepts which require SBasis +/
+    
+    D2!SBasis toSBasis()() const if (__traits(compiles, f[X].toSBasis))
+    { return D2!SBasis(f[X].toSBasis(), f[Y].toSBasis()); }
+
+    /+ Concepts which require Rect +/
+
+    Rect bounds_fast()() const if (__traits(compiles, f[X].bounds_fast()))
+    { return Rect(f[X].bounds_fast(), f[Y].bounds_fast()); }
+
+    Rect bounds_exact()() const if (__traits(compiles, f[X].bounds_exact()))
+    { return Rect(f[X].bounds_exact(), f[Y].bounds_exact()); }
+
+    Rect bounds_local()(in Interval t) const if (__traits(compiles, f[X].bounds_local(t)))
+    { return Rect(f[X].bounds_local(t), f[Y].bounds_local(t)); }
+
     private T[2] f;
 }
 
-// My one qualm with the D programming language.
-// Overload resolution.
-
-/+ Template specializations +/
-
-bool isZero(T)(in D2!T f, Coord eps = EPSILON)
-{ return f[X].isZero(eps) && f[Y].isZero(eps); }
-
-bool isConstant(T)(in D2!T f, Coord eps = EPSILON)
-{ return f[X].isConstant(eps) && f[Y].isConstant(eps); }
-
-bool isFinite(T)(in D2!T f)
-{ return f[X].isFinite() && f[Y].isFinite(); }
-
-Point at0(T)(in D2!T f)
-{ return Point(f[X].at0(), f[Y].at0()); }
-
-Point at1(T)(in D2!T f)
-{ return Point(f[X].at1(), f[Y].at1()); }
-
-Point valueAt(T)(in D2!T f, Coord t)
-{ return Point(f[X](t), f[Y](t)); }
-
-Point[] valueAndDerivatives(T)(in D2!T f, Coord t, uint n)
-{
-    Coord[] x = f[X].valueAndDerivatives(t, n),
-            y = f[Y].valueAndDerivatives(t, n); // always returns a slice of size n+1
-
-    Point[] res = new Point[n];
-    foreach(i, ref r; res) {
-        r = Point(x[i], y[i]);
-    }
-    return res;
-}
-
-D2!T reverse(T)(in D2!T a)
-{ return D2!T(reverse(a[X]), reverse(a[Y])); }
-
-/+D2!T portion(T)(in D2!T a, Coord f, Coord t)
-{ return D2!T(a[X].portion(f, t), a[Y].portion(f, t)); }
-
-D2!T portion(T)(in D2!T a, Interval i)
-{ return D2!T(a[X].portion(i), a[Y].portion(i)); }+/
-
-/+D2!T derivative(T)(in D2!T a)
-{ return D2!T(a[X].derivative(), a[Y].derivative()); }+/
-
-bool are_near(T)(in D2!T a, in D2!T b, Coord tol = EPSILON)
-{ return are_near(a[0], b[0], tol) && are_near(a[1], b[1], tol); }
-
-import geom.sbasis;
-
-D2!SBasis toSBasis(T)(in D2!T f)
-{ return D2!SBasis(f[X].toSBasis(), f[Y].toSBasis()); }
-
-D2!SBasis multiply(in SBasis a, in D2!SBasis b)
-{ return D2!SBasis(geom.sbasis.multiply(a, b[X]), geom.sbasis.multiply(a, b[Y])); }
-
-D2!T compose(T)(in D2!T a, in T b)
-{
-    D2!T r;
-    r[X] = a[X].compose(b);
-    r[Y] = a[Y].compose(b);
-    return r;
-}
-
-D2!T compose_each(T)(in D2!T a, in D2!T b)
-{
-    D2!T r;
-    r[X] = a[X].compose(b[X]);
-    r[Y] = a[Y].compose(b[Y]);
-    return r;
-}
-
-D2!T compose_each(T)(in T a, in D2!T b)
-{
-    D2!T r;
-    for(uint i = 0; i < 2; i++)
-        r[i] = compose(a,b[i]);
-    return r;
-}
-
-import geom.rect;
-
-// Some D2 Fragment implementation which requires rect:
-
-Rect bounds_fast(T)(in D2!T a)
-{ return Rect(a[X].bounds_fast(), a[Y].bounds_fast()); }
-
-Rect bounds_exact(T)(in D2!T a)
-{ return Rect(a[X].bounds_exact(), a[Y].bounds_exact()); }
-
-Rect bounds_local(T)(in D2!T a, in Interval t)
-{ return Rect(a[X].bounds_local(t), a[Y].bounds_local(t)); }
+D2!SBasis multiply()(in SBasis a, in D2!SBasis f)
+{ return D2!SBasis(geom.sbasis.multiply(a, f[X]), geom.sbasis.multiply(a, f[Y])); } // dammit
 
 /*
   Local Variables:

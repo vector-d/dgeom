@@ -117,9 +117,9 @@ struct Piecewise(T)
     /**
     *  The size of the returned vector equals n_derivs+1.
     */
-    output_type[] valueAndDerivatives(Coord t, uint n_derivs) const
+    output_type[] valueAndDerivatives(Coord t, size_t n_derivs) const
     {
-        uint n = segN(t);
+        size_t n = segN(t);
         output_type[] ret, val = segs[n].valueAndDerivatives(segT(t, n), n_derivs);
         Coord mult = 1;
         for (size_t i = 0; i < val.length; i++) {
@@ -132,13 +132,13 @@ struct Piecewise(T)
     /** Returns the segment index which corresponds to a 'global' piecewise time.
      * Also takes optional low/high parameters to expedite the search for the segment.
      */
-    uint segN(Coord t, int low = 0, int high = -1) const
+    size_t segN(Coord t, size_t low = 0, size_t high = size_t.max) const
     {
-        high = (high == -1) ? cast(int)size() : high;
+        high = (high == size_t.max) ? size() : high;
         if (t < cuts[0]) return 0;
-        if (t >= cuts[size()]) return cast(uint)size() - 1;
+        if (t >= cuts[size()]) return size() - 1;
         while (low < high) {
-            int mid = (high + low) / 2; // Let's not plan on having huge (> INT_MAX / 2) cut sequences
+            size_t mid = (high + low) / 2; // Let's not plan on having huge (> INT_MAX / 2) cut sequences
             Coord mv = cuts[mid];
             if (mv < t) {
                 if (t < cuts[mid + 1]) return mid; else low = mid + 1;
@@ -155,21 +155,26 @@ struct Piecewise(T)
      * Also takes an optional index parameter which may be used for efficiency or to find the time on a
      * segment outside its range.  If it is left to its default, -1, it will call segN to find the index.
      */
-    Coord segT(Coord t, int i = -1) const
+    Coord segT(Coord t, size_t ix) const
     {
-        if (i == -1) i = segN(t);
-        assert(i >= 0);
-        return (t - cuts[i]) / (cuts[i+1] - cuts[i]);
+        assert(ix >= 0);
+        return (t - cuts[ix]) / (cuts[ix+1] - cuts[ix]);
+    }
+    Coord segT(Coord t) const
+    {
+        size_t ix = segN(t);
+        assert(ix >= 0);
+        return (t - cuts[ix]) / (cuts[ix+1] - cuts[ix]);
     }
 
     output_type opCall(Coord t) const { return valueAt(t); }
     output_type valueAt(Coord t) const
     {
-        uint n = segN(t);
+        int n = cast(int) segN(t);
         return segs[n](segT(t, n));
     }
 
-    Coord mapToDomain(Coord t, uint i) const
+    Coord mapToDomain(Coord t, size_t i) const
     { return (1-t)*cuts[i] + t*cuts[i+1]; } // same as: t * (cuts[i+1] - cuts[i]) + cuts[i]
 
     // Offsets the piecewise domain
@@ -365,7 +370,7 @@ struct Piecewise(T)
         from = fmin(from, to);
         to = fmax(temp, to);
 
-        uint i = pw.segN(from);
+        size_t i = pw.segN(from);
         ret.push_cut(from);
         if (i == pw.size() - 1 || to <= pw.cuts[i + 1]) { // to/from inhabit the same segment
             ret.push(pw.elem_portion(i, from, to), to);
@@ -373,7 +378,7 @@ struct Piecewise(T)
         }
         ret.push_seg(pw[i].portion(pw.segT(from, i), 1.0 ));
         i++;
-        uint fi = pw.segN(to, i);
+        size_t fi = pw.segN(to, i);
         ret.reserve(fi - i + 1);
         if (to == pw.cuts[fi]) fi-=1;
 

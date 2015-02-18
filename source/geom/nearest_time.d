@@ -150,8 +150,8 @@ Coord nearest_time(in Point p, in Piecewise!(D2!SBasis) c, Coord from, Coord to)
         throw new Exception("[from,to] interval out of bounds");
     }
 
-    uint si = c.segN(from);
-    uint ei = c.segN(to);
+    size_t si = c.segN(from);
+    size_t ei = c.segN(to);
     if (si == ei) {
         Coord nearest = nearest_time(p, c[si], c.segT(from, si), c.segT(to, si));
         return c.mapToDomain(nearest, si);
@@ -159,12 +159,12 @@ Coord nearest_time(in Point p, in Piecewise!(D2!SBasis) c, Coord from, Coord to)
 
     Coord t;
     Coord nearest = nearest_time(p, c[si], c.segT(from, si));
-    uint ni = si;
+    size_t ni = si;
     Coord dsq;
     Coord mindistsq = geom.point.distanceSq(p, c[si](nearest));
 
     Rect bb = Rect.empty();
-    for (uint i = si + 1; i < ei; ++i) {
+    for (size_t i = si + 1; i < ei; ++i) {
         bb = Rect(c[i][X].bounds_fast(), c[i][Y].bounds_fast());
         dsq = distanceSq(p, bb);
         if (mindistsq <= dsq) continue;
@@ -207,8 +207,8 @@ Coord[] all_nearest_times(in Point p, in Piecewise!(D2!SBasis) c, Coord from, Co
         throw new Exception("[from,to] interval out of bounds");
     }
 
-    uint si = c.segN(from);
-    uint ei = c.segN(to);
+    size_t si = c.segN(from);
+    size_t ei = c.segN(to);
     if (si == ei) {
         Coord[] all_nearest = all_nearest_times(p, c[si], c.segT(from, si), c.segT(to, si));
         foreach(ref i; all_nearest) {
@@ -220,13 +220,13 @@ Coord[] all_nearest_times(in Point p, in Piecewise!(D2!SBasis) c, Coord from, Co
     Coord[] all_t;
     Coord[][] all_np;
     all_np ~= all_nearest_times(p, c[si], c.segT(from, si));
-    uint[] ni;
+    size_t[] ni;
     ni ~= si;
     Coord dsq;
     Coord mindistsq = geom.point.distanceSq(p, c[si](all_np[0][0]));
     Rect bb = Rect.empty();
 
-    for (uint i = si + 1; i < ei; ++i) {
+    for (size_t i = si + 1; i < ei; ++i) {
         bb = Rect(c[i][X].bounds_fast(), c[i][Y].bounds_fast());
         dsq = distanceSq(p, bb);
         if (mindistsq < dsq) continue;

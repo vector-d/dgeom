@@ -125,13 +125,13 @@ struct SBasis
      * There is an elegant way to compute the value and n derivatives for a polynomial using
      * a variant of horner's rule.  Someone will someday work out how for sbasis.
      */
-    Coord[] valueAndDerivatives(Coord t, uint n) const
+    Coord[] valueAndDerivatives(Coord t, size_t n) const
     {
         Coord[] ret;
         ret.length = n+1;
         ret[0] = valueAt(t);
         SBasis tmp = SBasis(this);
-        for (uint i = 1; i < n + 1; ++i) {
+        for (size_t i = 1; i < n + 1; ++i) {
             tmp.derive();
             ret[i] = tmp.valueAt(t);
         }
