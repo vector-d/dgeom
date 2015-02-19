@@ -29,7 +29,7 @@ module geom.point;
 
 public import geom.coord;
 
-import math = std.math;
+import std.math;
 import geom.affine;
 import geom.intpoint;
 import geom.transforms;

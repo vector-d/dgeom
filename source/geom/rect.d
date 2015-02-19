@@ -34,7 +34,7 @@ module geom.rect;
 
 public import geom.coord;
 
-import math = std.math;
+import std.math;
 import std.traits;
 
 import geom.affine;

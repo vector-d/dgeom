@@ -27,7 +27,7 @@
 module geom.sbasis;
 
 public import geom.coord;
-import math = std.math;
+import std.math;
 import geom.linear;
 import geom.interval;
 

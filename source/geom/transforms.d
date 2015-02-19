@@ -27,7 +27,7 @@
 
 module geom.transforms;
 
-import math = std.math;
+import std.math;
 import geom.affine;
 import geom.point;
 
