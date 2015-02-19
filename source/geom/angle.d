@@ -27,7 +27,7 @@
 
 module geom.angle;
 
-public import geom.coord;
+import geom.coord;
 import geom.point;
 import std.math;
 

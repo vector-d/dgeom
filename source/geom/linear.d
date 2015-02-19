@@ -26,7 +26,7 @@
 
 module geom.linear;
 
-public import geom.coord;
+import geom.coord;
 
 import math = std.math;
 import geom.interval;

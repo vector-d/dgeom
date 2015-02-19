@@ -25,7 +25,7 @@ module geom.nearest_time;
 
 import std.algorithm : swap, uniq;
 
-public import geom.coord;
+import geom.coord;
 import geom.d2;
 import geom.piecewise;
 import geom.point;

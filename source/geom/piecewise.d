@@ -21,12 +21,11 @@
 
 module geom.piecewise;
 
-public import geom.coord;
+import geom.coord;
 import geom.d2;
 import geom.interval;
 import geom.point;
 import geom.sbasis;
-import std.math;
 
 /**
  * Piecewise function class.
@@ -180,6 +179,7 @@ struct Piecewise(T)
     // Offsets the piecewise domain
     void offsetDomain(Coord o)
     {
+	import std.math : isFinite;
         assert(isFinite(o));
         if (o != 0)
             for (size_t i = 0; i <= size(); i++)
@@ -359,7 +359,7 @@ struct Piecewise(T)
      */
     Piecewise!T portion(Coord from, Coord to) const
     {
-        import std.math;
+        import std.math : fmin, fmax;
         Piecewise!T pw = Piecewise!T(this);
 
         if (pw.empty() || from == to) return Piecewise!(T).init;

@@ -25,7 +25,7 @@
 
 module geom.intpoint;
 
-public import geom.coord;
+import geom.coord;
 
 /**
  * Two-dimensional point with integer coordinates.

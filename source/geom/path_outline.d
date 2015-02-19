@@ -26,7 +26,7 @@
 
 module geom.path_outline;
 
-public import geom.coord;
+import geom.coord;
 import geom.curve;
 import geom.d2;
 import geom.bezier_curve;

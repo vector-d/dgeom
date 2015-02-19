@@ -27,7 +27,7 @@
 
 module geom.path;
 
-public import geom.coord;
+import geom.coord;
 
 import geom.affine;
 import geom.bezier_curve;

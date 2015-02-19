@@ -27,7 +27,7 @@
 
 module geom.svg_elliptical_arc;
 
-public import geom.coord;
+import geom.coord;
 import geom.angle;
 import geom.d2;
 import geom.curve;

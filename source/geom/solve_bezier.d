@@ -19,8 +19,9 @@
 
 module geom.solve_bezier;
 
-import std.math;
+import std.math : fabs;
 import geom.bezier;
+import geom.coord;
 import geom.interval;
 
 private const size_t MAX_DEPTH = 22;

@@ -43,10 +43,11 @@ also allow you to find intersections of multiple curves but require solving n*m 
 
 module geom.sbasis_roots;
 
+import geom.coord;
 import geom.interval;
 import geom.linear;
 import geom.sbasis;
-import std.math;
+import std.math : fabs, fmax, fmin;
 
 
 //-- multi_roots ------------------------------------

@@ -27,8 +27,8 @@
 
 module geom.transforms;
 
-import std.math;
 import geom.affine;
+import geom.coord;
 import geom.point;
 
 /** Translation by a vector.

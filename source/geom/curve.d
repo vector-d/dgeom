@@ -27,7 +27,7 @@
 
 module geom.curve;
 
-public import geom.coord;
+import geom.coord;
 import geom.affine;
 import geom.d2;
 import geom.interval;

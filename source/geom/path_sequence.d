@@ -26,7 +26,7 @@
 
 module geom.path_sequence;
 
-public import geom.coord;
+import geom.coord;
 import geom.interval;
 import geom.path;
 import geom.point;

@@ -28,7 +28,7 @@
 
 module geom.affine;
 
-public import geom.coord;
+import geom.coord;
 import math = std.math;
 import geom.point;
 import geom.transforms;

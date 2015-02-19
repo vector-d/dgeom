@@ -25,7 +25,7 @@
 
 module geom.path_builder;
 
-public import geom.coord;
+import geom.coord;
 import geom.curve;
 import geom.path;
 import geom.path_sequence;

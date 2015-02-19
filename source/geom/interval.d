@@ -22,7 +22,7 @@
  */
 
 module geom.interval;
-public import geom.coord;
+import geom.coord;
 
 import math = std.math;
 

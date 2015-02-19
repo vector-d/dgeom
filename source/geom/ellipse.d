@@ -27,7 +27,7 @@ module geom.ellipse;
 
 import std.math;
 
-public import geom.coord;
+import geom.coord;
 import geom.affine;
 import geom.elliptical_arc;
 import geom.point;

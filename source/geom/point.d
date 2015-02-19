@@ -27,9 +27,7 @@
 
 module geom.point;
 
-public import geom.coord;
-
-import std.math;
+import geom.coord;
 import geom.affine;
 import geom.intpoint;
 import geom.transforms;

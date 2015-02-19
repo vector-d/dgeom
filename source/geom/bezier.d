@@ -27,7 +27,7 @@
 
 module geom.bezier;
 
-public import geom.coord;
+import geom.coord;
 import geom.interval;
 import geom.point;
 
@@ -62,7 +62,7 @@ struct Bezier
     
     bool isFinite() const
     {
-        import std.math;
+        import std.math : isInfinity;
         foreach (c; c_)
             if (isInfinity(c)) return false;
         return true;

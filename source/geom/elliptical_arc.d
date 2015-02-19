@@ -27,9 +27,9 @@
 
 module geom.elliptical_arc;
 
-import std.math;
+import std.math : atan2, cos, fabs, fmin, fmod, sin, sqrt;
 
-public import geom.coord;
+import geom.coord;
 import geom.angle;
 import geom.affine;
 import geom.bezier_curve;

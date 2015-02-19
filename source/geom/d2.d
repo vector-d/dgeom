@@ -25,7 +25,7 @@
 
 module geom.d2;
 
-public import geom.coord;
+import geom.coord;
 
 import geom.affine;
 import geom.interval;
