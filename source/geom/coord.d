@@ -37,11 +37,9 @@ const Coord EPSILON = 1e-5; //1e-18;
 const size_t X = 0;
 const size_t Y = 1;
 
-deprecated("Redundant") Coord infinity() { return Coord.infinity; }
-
 /* IMPL: NearConcept */
-bool are_near(in Coord a, in Coord b, in double eps = EPSILON) { return a-b <= eps && a-b >= -eps; }
-bool rel_error_bound(in Coord a, in Coord b, in double eps = EPSILON) { return a <= eps*b && a >= -eps*b; }
+bool are_near(in Coord a, in Coord b, in Coord eps = EPSILON) { return a-b <= eps && a-b >= -eps; }
+bool rel_error_bound(in Coord a, in Coord b, in Coord eps = EPSILON) { return a <= eps*b && a >= -eps*b; }
 
 /*
   Local Variables:

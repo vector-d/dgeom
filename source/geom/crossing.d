@@ -319,7 +319,7 @@ Rect[] bounds(C : Path)(in C a)
     return rs;
 }
 
-T[] merge(alias Comparison, T)(T[] a, T[] b)
+private T[] merge(alias Comparison, T)(T[] a, T[] b)
 {
     import std.array;
 

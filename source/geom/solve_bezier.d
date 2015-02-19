@@ -31,7 +31,7 @@ private const size_t MAX_DEPTH = 22;
  * 
  * We try fairly hard to correctly handle multiple roots. */
 
-Coord[] find_bezier_roots(in Bezier b, double left_t, double right_t)
+Coord[] find_bezier_roots(in Bezier b, Coord left_t, Coord right_t)
 {
     Bezier bz = Bezier(b);
     Coord[] solutions;
@@ -140,7 +140,7 @@ void find_bernstein_roots(ref Coord[] solutions, Bezier bz, size_t depth, Coord 
 }
 
 // FIXME document me
-Coord secant(Bezier bz)
+private Coord secant(Bezier bz)
 {
     Coord s = 0, t = 1;
     Coord e = 1e-14;
@@ -171,7 +171,7 @@ Coord secant(Bezier bz)
 }
 
 // suggested by Sederberg.
-Coord horner(Bezier bz, double t)
+private Coord horner(Bezier bz, Coord t)
 {
     import geom.choose;
 

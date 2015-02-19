@@ -180,6 +180,8 @@ Point[] bezierFit(Point[] points, bool closed = false)
     return res;
 }
 
+private {
+
 auto dirc(Point point0, Point point1 = Point())
 {
     return atan2(
@@ -352,6 +354,8 @@ Point project(Point[4] curve, Point point)
     // Apply the projection
     return point - curve.bezierPointAtT(t);
 }
+
+} // private
 
 unittest
 {

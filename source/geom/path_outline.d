@@ -268,6 +268,8 @@ Path half_outline(in Path input, Coord width, Coord miter, JoinType join = JoinT
     return res;
 }
 
+private {
+
 void offset_curve(ref Path res, in Curve current, Coord width, Coord miter)
 {
     const(Coord) tolerance = 0.0025;
@@ -407,6 +409,8 @@ void offset_quadratic(ref Path p, in QuadraticBezier bez, Coord width, Coord tol
     CubicBezier cub = bez.elevate_degree();
     p.offset_cubic(cub, width, tol, levels);
 }
+
+} // private
 
 unittest
 {

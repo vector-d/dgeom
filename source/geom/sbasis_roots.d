@@ -64,8 +64,9 @@ import std.math;
 */
 //TODO: Make sure the code is "rounding-errors proof" and take care about repetition of roots!
 
+private {
 
-private int upper_level(in Coord[] levels, Coord x, Coord tol = 0.)
+int upper_level(in Coord[] levels, Coord x, Coord tol = 0.)
 {
     import std.range;
     auto r = assumeSorted(levels);
@@ -73,7 +74,7 @@ private int upper_level(in Coord[] levels, Coord x, Coord tol = 0.)
     return cast(int)(levels.length - p.length);
 }
 
-private void multi_roots_internal(in SBasis f, in SBasis df, in Coord[] levels, ref Coord[][] roots, Coord htol, Coord vtol, Coord a, Coord fa, Coord b, Coord fb)
+void multi_roots_internal(in SBasis f, in SBasis df, in Coord[] levels, ref Coord[][] roots, Coord htol, Coord vtol, Coord a, Coord fa, Coord b, Coord fb)
 {
     if (f.size() == 0) {
         int idx = upper_level(levels, 0, vtol);
@@ -198,14 +199,14 @@ Coord[][] multi_roots(in SBasis f, in Coord[] levels, Coord htol, Coord vtol, Co
 }
 
 
-private bool compareIntervalMin(Interval I, Interval J)
+bool compareIntervalMin(Interval I, Interval J)
 { return I.min()<J.min(); }
 
-private bool compareIntervalMax(Interval I, Interval J)
+bool compareIntervalMax(Interval I, Interval J)
 { return I.max()<J.max(); }
 
 //find the first interval whose max is >= x
-private uint upper_level(in Interval[] levels, double x)
+uint upper_level(in Interval[] levels, double x)
 {
     import std.range;
     auto r = assumeSorted!("a.max() < b.max()")(levels);
@@ -213,7 +214,7 @@ private uint upper_level(in Interval[] levels, double x)
     return cast(uint)(levels.length - p.length);
 }
 
-private Interval[] fuseContiguous(in Interval[] sets, double tol = 0.)
+Interval[] fuseContiguous(in Interval[] sets, double tol = 0.)
 {
     Interval[] result;
     if (sets.length == 0) return result;
@@ -247,7 +248,7 @@ private Interval[] fuseContiguous(in Interval[] sets, double tol = 0.)
   making things tricky and unpleasant...
 */
 
-private void level_sets_internal(in SBasis f, in SBasis df, in Interval[] levels, ref Interval[][] solsets, Coord a, Coord fa, Coord b, Coord fb, Coord tol = 1e-5)
+void level_sets_internal(in SBasis f, in SBasis df, in Interval[] levels, ref Interval[][] solsets, Coord a, Coord fa, Coord b, Coord fb, Coord tol = 1e-5)
 {
     if (f.size() == 0) {
         uint idx = upper_level(levels, 0.);
@@ -430,6 +431,8 @@ void subdiv_sbasis(in SBasis s, ref Coord[] roots, Coord left, Coord right)
     subdiv_sbasis(compose(s, SBasis(Linear(0, 0.5))), roots, left, middle);
     subdiv_sbasis(compose(s, SBasis(Linear(0.5, 1.))), roots, middle, right);
 }
+
+} // private
 
 // It is faster to use the bernstein root finder for small degree polynomials (<100?.
 

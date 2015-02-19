@@ -286,8 +286,8 @@ CrossingSet crossings_among(in PathSequence p)
     CrossingSet results = new CrossingSet(p.size());
     if (p.empty()) return results;
     
-    SimpleCrosser cc;
-    
+    SimpleCrosser cc = new SimpleCrosser;
+
     size_t[][] cull = sweep_bounds(bounds(p));
     foreach (i; 0 .. cull.length) {
         Crossings res = self_crossings(p[i]);
