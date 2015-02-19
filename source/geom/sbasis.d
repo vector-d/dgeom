@@ -131,7 +131,7 @@ struct SBasis
         ret.length = n+1;
         ret[0] = valueAt(t);
         SBasis tmp = SBasis(this);
-        for (size_t i = 1; i < n + 1; ++i) {
+        foreach (i; 1 .. n + 1) {
             tmp.derive();
             ret[i] = tmp.valueAt(t);
         }
@@ -175,11 +175,11 @@ struct SBasis
             SBasis result;
             result.resize(out_size);
 
-            for (uint i = 0; i < min_size; i++)
+            foreach (i; 0 .. min_size)
                 result[i] = this[i] + b[i];
-            for (uint i = min_size; i < size(); i++)
+            foreach (i; min_size .. size())
                 result[i] = this[i];
-            for (uint i = min_size; i < b.size(); i++)
+            foreach (i; min_size .. b.size())
                 result[i] = b[i];
 
             assert(result.size() == out_size);
@@ -190,18 +190,18 @@ struct SBasis
             SBasis result;
             result.resize(out_size);
 
-            for (uint i = 0; i < min_size; i++)
+            foreach (i; 0 .. min_size)
                 result[i] = this[i] + b[i];
-            for (uint i = min_size; i < size(); i++)
+            foreach (i; min_size .. size())
                 result[i] = this[i];
-            for (uint i = min_size; i < b.size(); i++)
+            foreach (i; min_size .. b.size())
                 result[i] = b[i];
 
             assert(result.size() == out_size);
             return result;
         } else static if (op == "*") {
             SBasis c = SBasis(size(), Linear());
-            for (size_t i = 0; i < size(); i++)
+            foreach (i; 0 .. size())
                 c[i] = d[i] * b;
             return c;
         } else static if (op == "/") {
@@ -227,7 +227,7 @@ struct SBasis
         } else static if (op == "*") {
             SBasis c;
             c.resize(size());
-            for (uint i = 0; i < size(); i++)
+            foreach (i; 0 .. size())
                 c[i] = this[i] * k;
             return c;
         } else static if (op == "/") { return this * (1./k); }
@@ -270,7 +270,7 @@ struct SBasis
     private void derive()
     { 
         if (isZero()) return;
-        for (uint k = 0; k < size() - 1; k++) {
+        foreach (k; 0 .. size() - 1) {
             double d = (2*k+1)*(this[k][1] - this[k][0]);
             
             this[k][0] = d + (k+1)*this[k+1][0];
@@ -394,7 +394,7 @@ SBasis inverse(SBasis a, int k)
         }
 
         //c.resize(k+1, Linear(0,0));
-        for (uint i = 0; i < cast(uint)k; i++) {   // for i:=0 to k do
+        foreach (i; 0 .. cast(uint)k) {   // for i:=0 to k do
             debug(debug_inversion) {
                 writeln("-------", i, ": ---------");
                 writeln("r=", r);
@@ -411,7 +411,7 @@ SBasis inverse(SBasis a, int k)
                 writeln("ci=", ci);
             }
 
-            for(int dim = 0; dim < 2; dim++) // t1^-i *= 1./t1
+            foreach (dim; 0 .. 2) // t1^-i *= 1./t1
                 t1i[dim] *= t1[dim];
             c[i] = ci; // c(v) := c(v) + c_i(v)*t^i
             // change from v to u parameterisation
@@ -460,14 +460,14 @@ static SBasis multiply_add(in SBasis a, in SBasis b, SBasis c)
         return c;
     c.resize(a.size() + b.size());
 
-    for (uint j = 0; j < b.size(); j++) {
-        for (uint i = j; i < a.size() + j; i++) {
+    foreach (j; 0 .. b.size()) {
+        foreach (i; j .. a.size() + j) {
             Coord tri = b[j].tri() * a[i-j].tri();
             c[i+1/*shift*/] += Linear(-tri);
         }
     }
-    for (uint j = 0; j < b.size(); j++) {
-        for (uint i = j; i < a.size() + j; i++) {
+    foreach (j; 0 .. b.size()) {
+        foreach (i; j .. a.size() + j) {
             c[i][X] += b[j][X]*a[i-j][X];
             c[i][Y] += b[j][Y]*a[i-j][Y];
         }
